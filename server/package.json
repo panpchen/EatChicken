@@ -1,0 +1,21 @@
+{
+	"name": "server",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/index.js",
+	"scripts": {
+		"start": "concurrently --kill-others \"tsc src/index.ts -w --outDir dist\" \"nodemon dist/index.js\""
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"express": "^4.17.1",
+		"uuid": "^8.3.2",
+		"whevent": "^2.1.1",
+		"ws": "^6.2.1"
+	},
+	"devDependencies": {
+		"@types/node": "^11.15.35"
+	}
+}

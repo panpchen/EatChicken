@@ -1,16 +1,25 @@
-const {ccclass, property} = cc._decorator;
+import Server from "./Server";
+
+const { ccclass, property } = cc._decorator;
 
 @ccclass
-export default class Helloworld extends cc.Component {
+export default class Game extends cc.Component {
+  @property(cc.Label)
+  topicLabel: cc.Label = null;
+  onLoad() {}
 
-    @property(cc.Label)
-    label: cc.Label = null;
-
-    @property
-    text: string = 'hello';
-
-    start () {
-        // init logic
-        this.label.string = this.text;
+  onClickEvent(evt, parm) {
+    switch (parm) {
+      case "yes":
+        cc.error("选择对的");
+        break;
+      case "no":
+        cc.error("选择错的");
+        break;
+      case "closeServer":
+        Server.Instance.closeServer();
+        cc.error("主动关闭websocket");
+        break;
     }
+  }
 }
