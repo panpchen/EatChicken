@@ -5,6 +5,9 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+import { SERVER_EVENT } from "../Constants";
+import { GameData, PlayerData } from "../GameData";
+import Server from "../Server";
 import BaseUI from "./BaseUI";
 import { UIManager, UIType } from "./UIManager";
 
@@ -14,25 +17,32 @@ const { ccclass, property } = cc._decorator;
 export default class MainUI extends BaseUI {
   @property(cc.Node)
   btnGroup: cc.Node = null;
+  @property(cc.Label)
+  nameLabel: cc.Label = null;
 
   start() {
-    this.btnGroup.pauseSystemEvents(true);
-    const duration = this.ani.getAnimationState("menuUI").duration;
-    this.scheduleOnce(() => {
-      this._tweenBtn();
-      this.btnGroup.resumeSystemEvents(true);
-    }, duration);
+    // this.btnGroup.pauseSystemEvents(true);
+    // const duration = this.ani.getAnimationState("mainUI").duration;
+    // this.scheduleOnce(() => {
+    //   this._tweenBtn();
+    //   this.btnGroup.resumeSystemEvents(true);
+    // }, duration);
+    this.nameLabel.string = `玩家昵称：${PlayerData.uname}`;
   }
 
-  _tweenBtn() {
-    cc.tween(this.btnGroup)
-      .repeatForever(cc.tween().to(0.2, { scale: 1.1 }).to(0.2, { scale: 1 }))
-      .start();
-  }
+  // _tweenBtn() {
+  //   cc.tween(this.btnGroup)
+  //     .repeatForever(cc.tween().to(0.2, { scale: 1.1 }).to(0.2, { scale: 1 }))
+  //     .start();
+  // }
 
-  clickGameStart() {
-    // UIManager.instance.showUI(UIType.SelectUI, () => {
-    //   this.hide();
-    // });
+  clickGo() {
+    UIManager.instance.hideAll();
+
+    if (GameData.playing) {
+      return;
+    }
+
+    Server.Instance.send(SERVER_EVENT.JOIN);
   }
 }

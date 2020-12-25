@@ -1,8 +1,4 @@
 "use strict";
-/**
- * Match entity
- * @author wheatup
- */
 exports.__esModule = true;
 var signal_1 = require("../enums/signal");
 var utils_1 = require("../utils/utils");

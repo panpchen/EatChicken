@@ -37,11 +37,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var ws_1 = require("ws");
-var signal_1 = require("./enums/signal");
-var whevent = require("whevent");
+var player_1 = require("./entities/player");
 var fs = require("fs");
-var signal_2 = require("./enums/signal");
-var match_1 = require("./entities/match");
 var Server = /** @class */ (function () {
     function Server() {
         this.wss = null;
@@ -61,50 +58,19 @@ var Server = /** @class */ (function () {
                         _a.config = _b.sent();
                         console.log("Setting up ws server...");
                         this.setupWebSocket();
-                        this.bindEvents();
                         return [2 /*return*/];
                 }
             });
         });
     };
-    Server.prototype.bindEvents = function () {
-        whevent.on(signal_2["default"].MATCH, this.onRequestMatch, this);
-        whevent.on(signal_2["default"].VALIDATE, this.onValidate, this);
-    };
-    Server.prototype.onRequestMatch = function (_a) {
-        var player = _a.player, data = _a.data;
-        var match = match_1["default"].getMatch();
-        match.join(player);
-    };
-    Server.prototype.onValidate = function (_a) {
-        var player = _a.player, data = _a.data;
-        var match = player.match;
-        if (match && match.running) {
-            match.validate(player, data.data);
-        }
-    };
     Server.prototype.setupWebSocket = function () {
         var _this = this;
-        var port = "2333";
-        this.wss = new ws_1.Server({ port: port });
-        console.log("\x1b[33m%s\x1b[0m", "Websocket server listening on port " + port + "...");
-        this.wss.on("connection", function (ws) {
-            console.log("已连接服务器");
-            console.log("在线人数: ", _this.wss.clients.size);
-            // let player = Player.getPlayer(ws);
-            // this.onConnection(player);
-            ws.on("open", function (event) {
-                console.log("open!");
-            });
-            ws.on("message", function (message) {
-                console.log("收到客户端消息");
-                // this.onMessage(player, message);
-            });
-            ws.on("close", function (code, reason) {
-                console.log("服务器断开连接: ", code, reason);
-                console.log("在线人数: ", _this.wss.clients.size);
-                // this.onClose(player);
-            });
+        this.wss = new ws_1.Server({ port: this.config.port });
+        console.log("\x1b[33m%s\x1b[0m", "Websocket server listening on port " + this.config.port + "...");
+        this.wss.on("connection", function (ws, req) {
+            console.log("已连接服务器 在线人数：", _this.wss.clients.size);
+            var player = new player_1["default"](ws);
+            player.connect();
         });
     };
     Server.prototype.loadConfig = function () {
@@ -118,31 +84,6 @@ var Server = /** @class */ (function () {
                 }
             });
         });
-    };
-    Server.prototype.onConnection = function (player) {
-        console.log("Player " + player.uuid + " has connected!");
-        player.send(signal_1["default"].UUID, player.uuid);
-    };
-    Server.prototype.onClose = function (player) {
-        player.remove();
-        console.log("Player " + player.uuid + " has disconnected!");
-    };
-    Server.prototype.onError = function (player, err) {
-        console.log("Player " + player.uuid + " has encountered an error!", err);
-    };
-    Server.prototype.onMessage = function (player, message) {
-        try {
-            var data = JSON.parse(Buffer.from(message, "base64").toString());
-            console.log("Player " + player.uuid + ": ", data);
-            whevent.emit(data.signal, { player: player, data: data });
-        }
-        catch (ex) {
-            console.error(ex);
-            console.error("Player " + player.uuid + " unknown package: ", message);
-        }
-    };
-    Server.prototype.send = function (player, signal, message) {
-        player.send(signal, message);
     };
     Server.$ = null;
     return Server;

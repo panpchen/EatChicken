@@ -9,7 +9,6 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class Tip extends cc.Component {
-
   @property(cc.Label)
   content: cc.Label = null;
 
@@ -21,9 +20,6 @@ export default class Tip extends cc.Component {
 
   _onHideSelf() {
     cc.Tween.stopAll();
-    cc.tween(this.node)
-      .delay(0.3)
-      .to(0.5, { opacity: 0 })
-      .start()
+    cc.tween(this.node).delay(0.8).to(0.5, { opacity: 0 }).start();
   }
 }

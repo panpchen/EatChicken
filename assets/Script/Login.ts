@@ -1,4 +1,8 @@
-import { GAME_EVENT } from "./Constants";
+import { ALLTIP, GAME_EVENT, SERVER_EVENT } from "./Constants";
+import Server from "./Server";
+import { v1 as uuidv1 } from "uuid";
+import TipManager from "./TipManager";
+import { PlayerData } from "./GameData";
 
 const { ccclass, property } = cc._decorator;
 
@@ -6,13 +10,39 @@ const { ccclass, property } = cc._decorator;
 export default class Login extends cc.Component {
   @property(cc.EditBox)
   editBox: cc.EditBox = null;
+
   onLoad() {
-    this.editBox.string = "";
+    cc.director.on(GAME_EVENT.GAME_ENTERGAME, this._onEnterGame, this);
     cc.director.preloadScene("Game");
   }
 
+  onDestroy() {
+    cc.director.off(GAME_EVENT.GAME_ENTERGAME, this._onEnterGame, this);
+  }
+
+  _onEnterGame() {
+    Server.Instance.send(SERVER_EVENT.HELLO, {
+      user: {
+        uid: PlayerData.uid,
+        uname: PlayerData.uname,
+      },
+    });
+    // this.editBox.string = "";
+
+    this.scheduleOnce(() => {
+      cc.director.loadScene("Game");
+    }, 0.7);
+  }
+
   onClickLogin() {
-    cc.director.emit(GAME_EVENT.GAME_MULTIPLAYER, this.editBox.string);
-    this.editBox.string = "";
+    PlayerData.uid = uuidv1();
+    PlayerData.uname = this.editBox.string.trim();
+
+    if (PlayerData.uname.length === 0) {
+      TipManager.Instance.createTips(ALLTIP.USERNAME_NULL);
+      return;
+    }
+
+    cc.director.emit(GAME_EVENT.GAME_MULTIPLAYER);
   }
 }

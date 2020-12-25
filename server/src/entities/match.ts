@@ -1,8 +1,3 @@
-/**
- * Match entity
- * @author wheatup
- */
-
 import Player from "./player";
 import signal from "../enums/signal";
 import Utils from "../utils/utils";

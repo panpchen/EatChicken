@@ -21,49 +21,66 @@ export default class Server extends cc.Component {
   }
 
   _connect(...args: any[]) {
+    if (this._ws) {
+      if (this._ws.readyState === WebSocket.CONNECTING) {
+        TipManager.Instance.createTips(ALLTIP.CONNECTING);
+        return;
+      }
+    }
     TipManager.Instance.createTips(ALLTIP.CONNECTING);
     this._ws = new WebSocket(ServerURl);
     this._ws.addEventListener("open", this._onOpen.bind(this));
     this._ws.addEventListener("message", this._onMessage.bind(this));
     this._ws.addEventListener("error", this._onError.bind(this));
     this._ws.addEventListener("close", this._onClose.bind(this));
-    this.scheduleOnce(() => {
-      cc.director.emit(GAME_EVENT.GAME_ENTERGAME);
-    }, 0.7);
   }
 
   _onOpen(event) {
-    cc.log("Connected to the server!", event);
-
-    // this.send(SERVER_EVENT.JOIN);
+    TipManager.Instance.createTips(ALLTIP.LOGINSUCCESS);
+    cc.director.emit(GAME_EVENT.GAME_ENTERGAME);
+    cc.log("已连接服务器");
   }
 
   _onError(event) {
-    cc.error("error", event);
+    cc.error("返回错误", event);
   }
 
   _onMessage({ data }) {
-    cc.log("receive message: ", data);
-    const pack = JSON.parse(atob(data));
-    switch (pack.eventName) {
-      case SERVER_EVENT.JOIN:
-        break;
+    const result = JSON.parse(decodeURIComponent(atob(data)));
+    cc.log(`收到服务端消息 ${JSON.stringify(result)}`);
+    switch (result.eventName) {
       case SERVER_EVENT.RESULT:
+        cc.log("响应服务器游戏结果消息");
+        break;
+      case SERVER_EVENT.HI:
+        cc.log("响应服务器HI消息");
+        break;
+      case SERVER_EVENT.JOIN:
+        cc.director.emit(GAME_EVENT.GAME_JOIN, result.data);
         break;
     }
   }
+
   _onClose(event) {
-    cc.log("Disconnected from the server!", event);
+    cc.log("服务器断开连接！请重试", event);
     TipManager.Instance.createTips(ALLTIP.DISCONNECT);
     this._ws.removeEventListener("open", this._onOpen.bind(this));
     this._ws.removeEventListener("message", this._onMessage.bind(this));
+    this._ws.removeEventListener("error", this._onError.bind(this));
     this._ws.removeEventListener("close", this._onClose.bind(this));
-  }
-  send(eventName: string, data?: any) {
-    cc.error(eventName, data);
-    this._ws.send(JSON.stringify({ eventName, data }));
+    cc.director.emit(GAME_EVENT.GAME_LOSTCONNECTTION);
   }
 
+  send(eventName: string, data?: any) {
+    cc.log(
+      `发送数据到服务器：事件名:${eventName} 结构体:${JSON.stringify(data)}`
+    );
+    this._ws.send(
+      btoa(encodeURIComponent(JSON.stringify({ eventName, data })))
+    );
+  }
+
+  // TODO... Test
   closeServer() {
     this._ws.close();
   }

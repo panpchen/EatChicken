@@ -23,6 +23,10 @@ export class UIManager extends cc.Component {
   allUI: cc.Node[] = [];
   @property(cc.Node)
   fadeMask: cc.Node = null;
+  @property(cc.Node)
+  UIParent: cc.Node = null;
+  @property(cc.Widget)
+  UIParentWidget: cc.Widget = null;
 
   onLoad() {
     UIManager.instance = this;
@@ -30,11 +34,15 @@ export class UIManager extends cc.Component {
   }
 
   _init() {
+    this.UIParentWidget.left = this.UIParentWidget.right = 0;
+    this.UIParentWidget.updateAlignment();
+
     for (let i = 0; i < this.allUI.length; i++) {
       const ui = this.allUI[i].getComponent(BaseUI);
       this._allPanel.set(ui.node.name, ui);
       ui.node.active = false;
     }
+
     this.showUI(UIType.MainUI);
   }
 

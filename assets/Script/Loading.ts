@@ -9,24 +9,28 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class Loading extends cc.Component {
+  @property(cc.ProgressBar)
+  progressBar: cc.ProgressBar = null;
+  @property(cc.Label)
+  barNum: cc.Label = null;
 
-    @property(cc.ProgressBar)
-    progressBar: cc.ProgressBar = null;
-    @property(cc.Label)
-    barNum: cc.Label = null;
+  onLoad() {
+    this.preloadLoginScene();
+  }
 
-    onLoad() {
-        this.preloadLoginScene();
-    }
-
-    preloadLoginScene() {
-        cc.director.preloadScene('Login', (completeCount, totalCount, item) => {
-            let v = completeCount / totalCount;
-            this.progressBar.node.getComponent("ProgressBarMoveEffect").updateProgress(v, () => {
-                cc.director.loadScene("Login");
-                cc.log('login scene preloaded');
-            });
-        }, () => { });
-    }
-
+  preloadLoginScene() {
+    cc.director.preloadScene(
+      "Login",
+      (completeCount, totalCount, item) => {
+        let v = completeCount / totalCount;
+        this.progressBar.node
+          .getComponent("ProgressBarMoveEffect")
+          .updateProgress(v, () => {
+            cc.director.loadScene("Login");
+            cc.log("login scene preloaded");
+          });
+      },
+      () => {}
+    );
+  }
 }

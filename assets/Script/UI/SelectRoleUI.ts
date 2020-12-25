@@ -5,19 +5,21 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { GAME_EVENT } from "./Constants";
+import Game from "../Game";
+import BaseUI from "./BaseUI";
+import { UIManager, UIType } from "./UIManager";
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export default class GameManager extends cc.Component {
-  onLoad() {
-    cc.game.addPersistRootNode(this.node);
-    cc.director.on(GAME_EVENT.GAME_ENTERGAME, this._onEnterGame, this);
-  }
+export default class ResultUI extends BaseUI {
+  @property(cc.Node)
+  titleNode: cc.Node = null;
 
-  _onEnterGame() {
-    cc.director.loadScene("Game");
-    cc.error("已进入游戏");
+  init(data) {}
+
+  clickBackGame() {
+    this.hide();
+    UIManager.instance.showUI(UIType.MainUI);
   }
 }
