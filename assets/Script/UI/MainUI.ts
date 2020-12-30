@@ -5,9 +5,10 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { SERVER_EVENT } from "../Constants";
+import { ALLTIP, SERVER_EVENT } from "../Constants";
 import { GameData, PlayerData } from "../GameData";
 import Server from "../Server";
+import TipManager from "../TipManager";
 import BaseUI from "./BaseUI";
 import { UIManager, UIType } from "./UIManager";
 
@@ -37,12 +38,12 @@ export default class MainUI extends BaseUI {
   // }
 
   clickGo() {
-    UIManager.instance.hideAll();
-
     if (GameData.playing) {
+      TipManager.Instance.showTips(ALLTIP.INGAME);
       return;
     }
 
+    TipManager.Instance.showTips(ALLTIP.JOINING);
     Server.Instance.send(SERVER_EVENT.JOIN);
   }
 }

@@ -60,7 +60,7 @@
     "_is3DNode": true,
     "_groupIndex": 0,
     "groupIndex": 0,
-    "autoReleaseAssets": false,
+    "autoReleaseAssets": true,
     "_id": "2d2f792f-a40c-49bb-a189-ed176a246e49"
   },
   {
@@ -198,7 +198,7 @@
       "array": [
         0,
         0,
-        390.57182724260537,
+        389.70581432189005,
         0,
         0,
         0,
@@ -296,7 +296,7 @@
       "array": [
         0,
         0,
-        390.57182724260537,
+        389.70581432189005,
         0,
         0,
         0,
@@ -2686,7 +2686,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 302.8,
+      "width": 778,
       "height": 44.1
     },
     "_anchorPoint": {
@@ -2698,8 +2698,8 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        -390.2,
-        630.9,
+        -390,
+        631,
         0,
         0,
         0,
@@ -2742,7 +2742,7 @@
     "_N$string": "UUID:",
     "_fontSize": 35,
     "_lineHeight": 35,
-    "_enableWrapText": true,
+    "_enableWrapText": false,
     "_N$file": null,
     "_isSystemFontUsed": true,
     "_spacingX": 0,
@@ -2752,7 +2752,7 @@
     "_N$horizontalAlign": 0,
     "_N$verticalAlign": 1,
     "_N$fontFamily": "Arial",
-    "_N$overflow": 3,
+    "_N$overflow": 2,
     "_N$cacheMode": 0,
     "_id": "57BMECzMFHLrEw/29vtSPH"
   },
@@ -2767,9 +2767,9 @@
     "alignMode": 1,
     "_target": null,
     "_alignFlags": 9,
-    "_left": 9.800000000000011,
+    "_left": 10,
     "_right": 0,
-    "_top": 9.100000000000023,
+    "_top": 9,
     "_bottom": 0,
     "_verticalCenter": 0,
     "_horizontalCenter": 0,

@@ -6,3 +6,7 @@ export const PlayerData = {
 export const GameData = {
   playing: false,
 };
+
+export function isSelf(uid: string) {
+  return PlayerData.uid === uid;
+}

@@ -41,7 +41,6 @@ var player_1 = require("./entities/player");
 var fs = require("fs");
 var Server = /** @class */ (function () {
     function Server() {
-        this.wss = null;
         this.config = null;
         Server.$ = this;
     }
@@ -64,11 +63,10 @@ var Server = /** @class */ (function () {
         });
     };
     Server.prototype.setupWebSocket = function () {
-        var _this = this;
-        this.wss = new ws_1.Server({ port: this.config.port });
+        var wss = new ws_1.Server({ port: this.config.port });
         console.log("\x1b[33m%s\x1b[0m", "Websocket server listening on port " + this.config.port + "...");
-        this.wss.on("connection", function (ws, req) {
-            console.log("已连接服务器 在线人数：", _this.wss.clients.size);
+        wss.on("connection", function (ws, req) {
+            console.log("已连接服务器 在线人数：", wss.clients.size);
             var player = new player_1["default"](ws);
             player.connect();
         });

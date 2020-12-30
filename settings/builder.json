@@ -7,8 +7,8 @@
     "upsideDown": false
   },
   "packageName": "org.cocos2d.helloworld",
-  "startScene": "2d2f792f-a40c-49bb-a189-ed176a246e49",
-  "title": "hello_world",
+  "startScene": "5e1cfbc2-1730-44f2-8035-5e2b6386ddc9",
+  "title": "EatChicken",
   "webOrientation": "portrait",
   "inlineSpriteFrames": true,
   "inlineSpriteFrames_native": true,

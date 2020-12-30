@@ -3,9 +3,9 @@ exports.__esModule = true;
 exports.Room = void 0;
 var signal_1 = require("../enums/signal");
 var globalRoomList = [];
-// 每个房间最多两人
-var MAX_ROOT_MEMBER = 4;
-//
+// 设定开始游戏所需最小人数
+var MAX_ROOT_MEMBER = 2;
+// 等待机器人加入时间
 var ADD_ROBOT_AFTER = 3000;
 // 游戏时间 10秒
 var GAME_TIME = 10;
@@ -14,6 +14,7 @@ var nextRoomId = 0;
 var Room = /** @class */ (function () {
     function Room() {
         this.id = "room" + nextRoomId++;
+        // 当前房间所有玩家
         this.players = [];
         this.players = [];
     }
@@ -41,7 +42,16 @@ var Room = /** @class */ (function () {
         var clientIndex = this.players.indexOf(player);
         if (clientIndex != -1) {
             this.players.splice(clientIndex, 1);
+            player = null;
         }
+        var playerList = [];
+        this.players.forEach(function (player) {
+            playerList.push(player.user);
+        });
+        this.players.forEach(function (player) {
+            console.log("当前大厅玩家：", playerList);
+            player.send(signal_1["default"].LEAVE, playerList);
+        });
         // 如果房间只剩一个人，此人离开则房间解散
         if (this.players.length === 0) {
             var roomIndex = globalRoomList.indexOf(this);

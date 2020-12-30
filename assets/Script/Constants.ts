@@ -22,11 +22,12 @@ export enum GAME_EVENT {
   GAME_ENTERGAME = "GAME_ENTERGAME",
   GAME_START = "GAME_START",
   GAME_JOIN = "GAME_JOIN",
+  GAME_LEAVE = "GAME_LEAVE",
   GAME_OVER = "GAME_OVER",
   GAME_READY = "GAME_READY",
   GAME_CORRECT = "GAME_CORRECT",
   GAME_WRONG = "GAME_WRONG",
-  GAME_LOSTCONNECTTION = "GAME_LOSTCONNECTTION",
+  GAME_LOSTCONNECTION = "GAME_LOSTCONNECTION",
 }
 
 export enum ALLTIP {
@@ -34,6 +35,9 @@ export enum ALLTIP {
   DISCONNECT = "断开连接",
   LOGINSUCCESS = "登录成功",
   USERNAME_NULL = "请输入昵称",
+  JOINING = "正在加入游戏...",
+  JOINSUCCESS = "加入游戏成功",
+  INGAME = "你已经在游戏中",
 }
 
-export const ServerURl: string = `ws://192.168.19.147:2333`;
+export const ServerURl: string = `ws://192.168.19.149:2334`;

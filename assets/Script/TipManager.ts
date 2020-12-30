@@ -21,7 +21,7 @@ export default class TipManager extends cc.Component {
     TipManager.Instance = this;
   }
 
-  createTips(content) {
+  showTips(content) {
     if (!this._tip || !cc.isValid(this._tip)) {
       this._tip = cc.instantiate(this.tipPrefab);
     }

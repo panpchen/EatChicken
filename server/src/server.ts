@@ -4,7 +4,6 @@ import * as fs from "fs";
 
 export default class Server {
   public static $: Server = null;
-  public wss: WebSocketServer = null;
   public config: any = null;
 
   constructor() {
@@ -19,13 +18,13 @@ export default class Server {
   }
 
   setupWebSocket() {
-    this.wss = new WebSocketServer({ port: this.config.port });
+    const wss = new WebSocketServer({ port: this.config.port });
     console.log(
       "\x1b[33m%s\x1b[0m",
       `Websocket server listening on port ${this.config.port}...`
     );
-    this.wss.on("connection", (ws, req) => {
-      console.log("已连接服务器 在线人数：", this.wss.clients.size);
+    wss.on("connection", (ws, req) => {
+      console.log("已连接服务器 在线人数：", wss.clients.size);
       const player = new Player(ws);
       player.connect();
     });

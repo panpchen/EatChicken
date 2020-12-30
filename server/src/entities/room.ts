@@ -3,10 +3,10 @@ import Player from "./player";
 
 const globalRoomList: Room[] = [];
 
-// 每个房间最多两人
-const MAX_ROOT_MEMBER = 4;
+// 设定开始游戏所需最小人数
+const MAX_ROOT_MEMBER = 2;
 
-//
+// 等待机器人加入时间
 const ADD_ROBOT_AFTER = 3000;
 
 // 游戏时间 10秒
@@ -17,6 +17,7 @@ let nextRoomId = 0;
 /** 表示一个房间 */
 export class Room {
   public readonly id = `room${nextRoomId++}`;
+  // 当前房间所有玩家
   public readonly players: Player[] = [];
 
   private constructor() {
@@ -26,6 +27,7 @@ export class Room {
   /** 添加编辑客户端到会话 */
   public addPlayer(player: Player) {
     console.log(`玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
+
     this.players.push(player);
 
     const playerList = [];
@@ -51,7 +53,17 @@ export class Room {
     const clientIndex = this.players.indexOf(player);
     if (clientIndex != -1) {
       this.players.splice(clientIndex, 1);
+      player = null;
     }
+
+    const playerList = [];
+    this.players.forEach((player) => {
+      playerList.push(player.user);
+    });
+    this.players.forEach((player) => {
+      console.log("当前大厅玩家：", playerList);
+      player.send(signal.LEAVE, playerList);
+    });
 
     // 如果房间只剩一个人，此人离开则房间解散
     if (this.players.length === 0) {

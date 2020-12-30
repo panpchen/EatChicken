@@ -8,6 +8,8 @@ export default class Player {
   public user: User = null;
   public gameData: GameData = null;
   public room: Room = null;
+  // 玩家是否在线
+  private _isAlive: boolean = false;
 
   constructor(ws: ws) {
     this._ws = ws;
@@ -21,45 +23,71 @@ export default class Player {
   }
 
   connect() {
+    this._isAlive = true;
+    this._ws.on("pong", () => {
+      this._isAlive = true;
+      console.log("心跳检测中...");
+    });
+
+    const pingIntervalTime: number = 15000; // 心跳检测间隔
+    const pingInterval = setInterval(() => {
+      if (this._isAlive === false) {
+        console.log(`不再心跳检测： 玩家: ${this.user.uname} 已断开连接`);
+        clearInterval(pingInterval);
+
+        if (this.room) {
+          this.room.removePlayer(this);
+          this.room = null;
+        }
+        return this._ws.terminate();
+      }
+      this._isAlive = false;
+      console.log("ping: ", this.user.uname);
+      this._ws.ping();
+    }, pingIntervalTime);
+
     this._ws.on("message", (msg) => {
       const result = JSON.parse(
         decodeURIComponent(Buffer.from(msg, "base64").toString())
       );
+
+      console.log(
+        `收到客户端消息 事件名:${result.eventName} | 结构体:${result}`
+      );
+
       switch (result.eventName) {
         case signal.HELLO:
           this._ansHello(result);
           break;
         case signal.JOIN:
-          this._ansJoin(result);
+          setTimeout(() => {
+            this._ansJoin(result);
+          }, 1000);
           break;
       }
-      console.log(
-        `收到客户端消息 事件名:${result.eventName} | 结构体:${result}`
-      );
+    });
+
+    this._ws.on("error", (msg) => {
+      console.log("已断开连接： onError");
+      clearInterval(pingInterval);
     });
 
     this._ws.on("close", (code: number, reason: string) => {
+      console.log(`已断开连接: ${this.user.uname}`);
+      clearInterval(pingInterval);
       if (this.room) {
         this.room.removePlayer(this);
         this.room = null;
       }
-      console.log(`用户: ${this.user.uname} 已断开连接`);
-      this.user = null;
-      this.gameData = null;
-      this._ws.close();
-      this._ws = null;
     });
   }
 
   _ansHello(result) {
     this.user = result.data.user as User;
-    this.send(signal.HI, result);
+    this.send(signal.HI);
   }
 
   _ansJoin(result) {
-    if (this.room) {
-      this.room.removePlayer(this);
-    }
     this.room = Room.findRoomWithSeat() || Room.create();
     this.room.addPlayer(this);
     if (this.room.isFull()) {
@@ -69,10 +97,15 @@ export default class Player {
   }
   send(eventName: string, data?: any) {
     try {
-      console.log(
-        `发送数据到客户端：事件名:${eventName} | 结构体:${JSON.stringify(data)}`
-      );
-      if (this._ws.readyState === this._ws.OPEN) {
+      if (
+        this._ws.readyState === this._ws.OPEN &&
+        this._ws.bufferedAmount === 0
+      ) {
+        console.log(
+          `发送数据到客户端：事件名:${eventName} | 结构体:${JSON.stringify(
+            data
+          )}`
+        );
         this._ws.send(
           Buffer.from(
             encodeURIComponent(JSON.stringify({ eventName, data }))

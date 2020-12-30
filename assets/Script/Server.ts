@@ -23,11 +23,11 @@ export default class Server extends cc.Component {
   _connect(...args: any[]) {
     if (this._ws) {
       if (this._ws.readyState === WebSocket.CONNECTING) {
-        TipManager.Instance.createTips(ALLTIP.CONNECTING);
+        TipManager.Instance.showTips(ALLTIP.CONNECTING);
         return;
       }
     }
-    TipManager.Instance.createTips(ALLTIP.CONNECTING);
+    TipManager.Instance.showTips(ALLTIP.CONNECTING);
     this._ws = new WebSocket(ServerURl);
     this._ws.addEventListener("open", this._onOpen.bind(this));
     this._ws.addEventListener("message", this._onMessage.bind(this));
@@ -36,13 +36,13 @@ export default class Server extends cc.Component {
   }
 
   _onOpen(event) {
-    TipManager.Instance.createTips(ALLTIP.LOGINSUCCESS);
+    TipManager.Instance.showTips(ALLTIP.LOGINSUCCESS);
     cc.director.emit(GAME_EVENT.GAME_ENTERGAME);
     cc.log("已连接服务器");
   }
 
   _onError(event) {
-    cc.error("返回错误", event);
+    this._onClose(event);
   }
 
   _onMessage({ data }) {
@@ -58,26 +58,39 @@ export default class Server extends cc.Component {
       case SERVER_EVENT.JOIN:
         cc.director.emit(GAME_EVENT.GAME_JOIN, result.data);
         break;
+      case SERVER_EVENT.LEAVE:
+        cc.director.emit(GAME_EVENT.GAME_LEAVE, result.data);
+        cc.error("有玩家离开了, 剩余玩家", result.data);
+        break;
     }
   }
 
   _onClose(event) {
-    cc.log("服务器断开连接！请重试", event);
-    TipManager.Instance.createTips(ALLTIP.DISCONNECT);
+    cc.error("服务器断开连接！请重试", event);
+    TipManager.Instance.showTips(ALLTIP.DISCONNECT);
     this._ws.removeEventListener("open", this._onOpen.bind(this));
     this._ws.removeEventListener("message", this._onMessage.bind(this));
     this._ws.removeEventListener("error", this._onError.bind(this));
     this._ws.removeEventListener("close", this._onClose.bind(this));
-    cc.director.emit(GAME_EVENT.GAME_LOSTCONNECTTION);
+    cc.director.emit(GAME_EVENT.GAME_LOSTCONNECTION);
   }
 
   send(eventName: string, data?: any) {
-    cc.log(
-      `发送数据到服务器：事件名:${eventName} 结构体:${JSON.stringify(data)}`
-    );
-    this._ws.send(
-      btoa(encodeURIComponent(JSON.stringify({ eventName, data })))
-    );
+    try {
+      cc.log(
+        `发送数据到服务器：事件名:${eventName} 结构体:${JSON.stringify(data)}`
+      );
+      if (
+        this._ws.readyState === WebSocket.OPEN &&
+        this._ws.bufferedAmount === 0
+      ) {
+        this._ws.send(
+          btoa(encodeURIComponent(JSON.stringify({ eventName, data })))
+        );
+      }
+    } catch (err) {
+      cc.error(`客户端发送错误: ${err}`);
+    }
   }
 
   // TODO... Test

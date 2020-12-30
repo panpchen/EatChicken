@@ -14,35 +14,38 @@ cc.Class({
   properties: {
     _time: 0,
     _callback: null,
-    _label: null
-  },
-  onLoad() {
-    this.isLerp = false;
-    this._time = 0;
-    this.ratio = 0;
-    this.bar = this.node.getComponent(cc.ProgressBar);
-    this._label = this.node.getChildByName("label").getComponent(cc.Label);
+    _label: null,
+    _isLerp: false,
   },
 
   updateProgress(ratio, callback) {
+    this.bar = this.node.getComponent(cc.ProgressBar);
+    this._label = this.node.getChildByName("label").getComponent(cc.Label);
     this.ratio = ratio;
     this._callback = callback;
-    this.isLerp = true;
+    this._isLerp = true;
   },
 
   update(dt) {
-    if (!this.isLerp) {
+    if (!this._isLerp) {
+      cc.error("正在lerping...");
       return;
     }
 
     this._time += dt;
 
-    this.bar.progress = cc.misc.lerp(this.bar.progress, this.ratio, this._time * 0.2);
+    this.bar.progress = cc.misc.lerp(
+      this.bar.progress,
+      this.ratio,
+      this._time * 0.2
+    );
+
     if (this.bar.progress >= 0.99) {
-      this.isLerp = false;
+      this._isLerp = false;
       this.bar.progress = 1;
       this._callback && this._callback();
     }
+
     this._label.string = `${Math.floor(Number(this.bar.progress * 100))}%`;
-  }
+  },
 });

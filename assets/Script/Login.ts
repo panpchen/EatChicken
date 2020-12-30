@@ -10,9 +10,12 @@ const { ccclass, property } = cc._decorator;
 export default class Login extends cc.Component {
   @property(cc.EditBox)
   editBox: cc.EditBox = null;
+  @property(cc.Node)
+  loginBtn: cc.Node = null;
 
   onLoad() {
     cc.director.on(GAME_EVENT.GAME_ENTERGAME, this._onEnterGame, this);
+    this.loginBtn.on("click", this._onClickLogin, this);
     cc.director.preloadScene("Game");
   }
 
@@ -34,14 +37,14 @@ export default class Login extends cc.Component {
     }, 0.7);
   }
 
-  onClickLogin() {
-    PlayerData.uid = uuidv1();
-    PlayerData.uname = this.editBox.string.trim();
-
-    if (PlayerData.uname.length === 0) {
-      TipManager.Instance.createTips(ALLTIP.USERNAME_NULL);
+  _onClickLogin() {
+    if (this.editBox.string.length === 0) {
+      TipManager.Instance.showTips(ALLTIP.USERNAME_NULL);
       return;
     }
+
+    PlayerData.uid = uuidv1();
+    PlayerData.uname = this.editBox.string.trim();
 
     cc.director.emit(GAME_EVENT.GAME_MULTIPLAYER);
   }

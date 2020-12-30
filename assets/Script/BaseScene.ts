@@ -13,7 +13,7 @@ const { ccclass, property } = cc._decorator;
 export default class BaseScene extends cc.Component {
   onLoad() {
     cc.director.on(
-      GAME_EVENT.GAME_LOSTCONNECTTION,
+      GAME_EVENT.GAME_LOSTCONNECTION,
       this._onLostConnection,
       this
     );
@@ -21,7 +21,7 @@ export default class BaseScene extends cc.Component {
 
   onDestroy() {
     cc.director.off(
-      GAME_EVENT.GAME_LOSTCONNECTTION,
+      GAME_EVENT.GAME_LOSTCONNECTION,
       this._onLostConnection,
       this
     );
