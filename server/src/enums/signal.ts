@@ -8,4 +8,6 @@ export default {
   RESULT: "RESULT",
   HELLO: "HELLO",
   HI: "HI",
+  LOSTCONNECTION: "LOSTCONNECTION",
+  HEARTBEAT: "HEARTBEAT", // 心跳检测
 };

@@ -9,5 +9,7 @@ exports["default"] = {
     VALIDATE: "VALIDATE",
     RESULT: "RESULT",
     HELLO: "HELLO",
-    HI: "HI"
+    HI: "HI",
+    LOSTCONNECTION: "LOSTCONNECTION",
+    HEARTBEAT: "HEARTBEAT"
 };

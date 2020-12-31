@@ -28,7 +28,6 @@ cc.Class({
 
   update(dt) {
     if (!this._isLerp) {
-      cc.error("正在lerping...");
       return;
     }
 

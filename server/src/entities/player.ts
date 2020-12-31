@@ -10,6 +10,7 @@ export default class Player {
   public room: Room = null;
   // 玩家是否在线
   private _isAlive: boolean = false;
+  private _pingInterval = null;
 
   constructor(ws: ws) {
     this._ws = ws;
@@ -24,27 +25,8 @@ export default class Player {
 
   connect() {
     this._isAlive = true;
-    this._ws.on("pong", () => {
-      this._isAlive = true;
-      console.log("心跳检测中...");
-    });
 
-    const pingIntervalTime: number = 15000; // 心跳检测间隔
-    const pingInterval = setInterval(() => {
-      if (this._isAlive === false) {
-        console.log(`不再心跳检测： 玩家: ${this.user.uname} 已断开连接`);
-        clearInterval(pingInterval);
-
-        if (this.room) {
-          this.room.removePlayer(this);
-          this.room = null;
-        }
-        return this._ws.terminate();
-      }
-      this._isAlive = false;
-      console.log("ping: ", this.user.uname);
-      this._ws.ping();
-    }, pingIntervalTime);
+    this._onHeartBeat();
 
     this._ws.on("message", (msg) => {
       const result = JSON.parse(
@@ -64,22 +46,49 @@ export default class Player {
             this._ansJoin(result);
           }, 1000);
           break;
+        case signal.HEARTBEAT:
+          this._ansHeartBeat();
+          break;
       }
     });
 
     this._ws.on("error", (msg) => {
       console.log("已断开连接： onError");
-      clearInterval(pingInterval);
+      clearInterval(this._pingInterval);
     });
 
     this._ws.on("close", (code: number, reason: string) => {
       console.log(`已断开连接: ${this.user.uname}`);
-      clearInterval(pingInterval);
+      clearInterval(this._pingInterval);
       if (this.room) {
         this.room.removePlayer(this);
         this.room = null;
       }
     });
+  }
+
+  // 服务端心跳检测
+  _onHeartBeat() {
+    this._ws.on("pong", () => {
+      this._isAlive = true;
+      console.log(`心跳检测中 ${this.user.uname}`);
+    });
+
+    const pingIntervalTime: number = 15000; // 心跳检测间隔 15秒
+    this._pingInterval = setInterval(() => {
+      if (this._isAlive === false) {
+        console.log(`不再心跳检测： 玩家: ${this.user.uname} 已断开连接`);
+        clearInterval(this._pingInterval);
+
+        if (this.room) {
+          this.room.removePlayer(this);
+          this.room = null;
+        }
+        return this._ws.terminate();
+      }
+      this._isAlive = false;
+      this._ws.ping();
+    }, pingIntervalTime);
   }
 
   _ansHello(result) {
@@ -95,6 +104,11 @@ export default class Player {
       // this.room.playGame();
     }
   }
+
+  _ansHeartBeat() {
+    this.send(signal.HEARTBEAT);
+  }
+
   send(eventName: string, data?: any) {
     try {
       if (

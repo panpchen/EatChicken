@@ -15,6 +15,7 @@ export enum SERVER_EVENT {
   RESULT = "RESULT",
   HELLO = "HELLO", //  hi-hello 握手
   HI = "HI",
+  HEARTBEAT = "HEARTBEAT", // 心跳检测
 }
 
 export enum GAME_EVENT {

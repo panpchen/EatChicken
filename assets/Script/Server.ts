@@ -14,6 +14,8 @@ const { ccclass, property } = cc._decorator;
 export default class Server extends cc.Component {
   private _ws: WebSocket = null;
   public static Instance: Server = null;
+  private _pingInterval = null;
+  private _isAlive: boolean = false;
   onLoad() {
     cc.game.addPersistRootNode(this.node);
     Server.Instance = this;
@@ -37,12 +39,9 @@ export default class Server extends cc.Component {
 
   _onOpen(event) {
     TipManager.Instance.showTips(ALLTIP.LOGINSUCCESS);
+    this._heartBeat();
     cc.director.emit(GAME_EVENT.GAME_ENTERGAME);
     cc.log("已连接服务器");
-  }
-
-  _onError(event) {
-    this._onClose(event);
   }
 
   _onMessage({ data }) {
@@ -62,11 +61,19 @@ export default class Server extends cc.Component {
         cc.director.emit(GAME_EVENT.GAME_LEAVE, result.data);
         cc.error("有玩家离开了, 剩余玩家", result.data);
         break;
+      case SERVER_EVENT.HEARTBEAT:
+        this._heartBeat();
+        break;
     }
+  }
+
+  _onError(event) {
+    this._onClose(event);
   }
 
   _onClose(event) {
     cc.error("服务器断开连接！请重试", event);
+    this._clearHeartBeat();
     TipManager.Instance.showTips(ALLTIP.DISCONNECT);
     this._ws.removeEventListener("open", this._onOpen.bind(this));
     this._ws.removeEventListener("message", this._onMessage.bind(this));
@@ -93,7 +100,27 @@ export default class Server extends cc.Component {
     }
   }
 
-  // TODO... Test
+  // 客户端心跳检测
+  _heartBeat() {
+    this._clearHeartBeat();
+    this._isAlive = true;
+    this._pingInterval = setInterval(() => {
+      cc.log(`客户端 心跳检测中...`);
+      if (this._isAlive === false) {
+        cc.log(`客户端停止心跳检测，因为已断线`);
+        this._clearHeartBeat();
+        return this._ws.close();
+      }
+      this._isAlive = false;
+      this.send(SERVER_EVENT.HEARTBEAT);
+    }, 5000);
+  }
+
+  _clearHeartBeat() {
+    cc.error("清空心跳检测");
+    clearInterval(this._pingInterval);
+  }
+
   closeServer() {
     this._ws.close();
   }

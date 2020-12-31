@@ -29,7 +29,7 @@ export default class Game extends BaseScene {
 
     // 判断最后加入的玩家是否是自己
     const lastJoinPlayer = players[players.length - 1];
-    if (isSelf(lastJoinPlayer.uid)) {
+    if (PlayerData.isSelf(lastJoinPlayer.uid)) {
       cc.log("玩家加入成功");
       TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
       UIManager.instance.hideAll();
