@@ -5,7 +5,13 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { ALLTIP, GAME_EVENT, ServerURl, SERVER_EVENT } from "./Constants";
+import {
+  ALLTIP,
+  CLOSE_CODE,
+  GAME_EVENT,
+  ServerURl,
+  SERVER_EVENT,
+} from "./Constants";
 import TipManager from "./TipManager";
 
 const { ccclass, property } = cc._decorator;
@@ -29,6 +35,12 @@ export default class Server extends cc.Component {
         return;
       }
     }
+
+    if (this._isAlive) {
+      TipManager.Instance.showTips(ALLTIP.INGAME);
+      return;
+    }
+
     TipManager.Instance.showTips(ALLTIP.CONNECTING);
     this._ws = new WebSocket(ServerURl);
     this._ws.addEventListener("open", this._onOpen.bind(this));
@@ -38,10 +50,9 @@ export default class Server extends cc.Component {
   }
 
   _onOpen(event) {
-    TipManager.Instance.showTips(ALLTIP.LOGINSUCCESS);
     this._heartBeat();
-    cc.director.emit(GAME_EVENT.GAME_ENTERGAME);
-    cc.log("已连接服务器");
+    cc.director.emit(GAME_EVENT.GAME_LOGINGAME);
+    cc.log("已连接服务器,开始登录游戏");
   }
 
   _onMessage({ data }) {
@@ -53,6 +64,9 @@ export default class Server extends cc.Component {
         break;
       case SERVER_EVENT.HI:
         cc.log("响应服务器HI消息");
+        this.scheduleOnce(() => {
+          cc.director.loadScene("Game");
+        }, 0.7);
         break;
       case SERVER_EVENT.JOIN:
         cc.director.emit(GAME_EVENT.GAME_JOIN, result.data);
@@ -64,6 +78,12 @@ export default class Server extends cc.Component {
       case SERVER_EVENT.HEARTBEAT:
         this._heartBeat();
         break;
+      case SERVER_EVENT.LOGIN_FAILED:
+        TipManager.Instance.showTips(ALLTIP.LOGIN_FAILED);
+        this.scheduleOnce(() => {
+          this._ws.close(CLOSE_CODE.LOGIN_FAILED);
+        }, 1);
+        break;
     }
   }
 
@@ -72,8 +92,9 @@ export default class Server extends cc.Component {
   }
 
   _onClose(event) {
-    cc.error("服务器断开连接！请重试", event);
+    cc.error("已断开连接！", event);
     this._clearHeartBeat();
+    this._isAlive = false;
     TipManager.Instance.showTips(ALLTIP.DISCONNECT);
     this._ws.removeEventListener("open", this._onOpen.bind(this));
     this._ws.removeEventListener("message", this._onMessage.bind(this));
@@ -117,11 +138,7 @@ export default class Server extends cc.Component {
   }
 
   _clearHeartBeat() {
-    cc.error("清空心跳检测");
+    // cc.error("清空心跳检测");
     clearInterval(this._pingInterval);
-  }
-
-  closeServer() {
-    this._ws.close();
   }
 }

@@ -42,6 +42,7 @@ var fs = require("fs");
 var Server = /** @class */ (function () {
     function Server() {
         this.config = null;
+        this._loginPlayers = []; // 记录登录过的玩家
         Server.$ = this;
     }
     Server.prototype.init = function () {
@@ -82,6 +83,25 @@ var Server = /** @class */ (function () {
                 }
             });
         });
+    };
+    Server.prototype.recordLoginPlayerToList = function (player) {
+        var haveLogin = this._loginPlayers.some(function (p) {
+            return p.user.uname === player.user.uname;
+        });
+        // 重复登录返回false
+        if (!haveLogin) {
+            this._loginPlayers.push(player);
+            return true;
+        }
+        return false;
+    };
+    Server.prototype.removePlayer = function (player) {
+        for (var i = this._loginPlayers.length - 1; i >= 0; i--) {
+            if (this._loginPlayers[i].user.uname === player.user.uname) {
+                this._loginPlayers.splice(i, 1);
+                break;
+            }
+        }
     };
     Server.$ = null;
     return Server;

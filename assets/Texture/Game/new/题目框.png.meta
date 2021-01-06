@@ -1,0 +1,36 @@
+{
+  "ver": "2.3.5",
+  "uuid": "16c4736e-1c92-4171-bed3-2099410cbc5b",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 739,
+  "height": 212,
+  "platformSettings": {},
+  "subMetas": {
+    "题目框": {
+      "ver": "1.0.4",
+      "uuid": "941981b0-728f-4042-89a0-7eb8fdc84382",
+      "rawTextureUuid": "16c4736e-1c92-4171-bed3-2099410cbc5b",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": -0.5,
+      "offsetY": 0.5,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 738,
+      "height": 211,
+      "rawWidth": 739,
+      "rawHeight": 212,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

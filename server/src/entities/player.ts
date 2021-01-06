@@ -3,6 +3,7 @@ import { User } from "./user";
 import { GameChoice, GameData } from "./gameData";
 import { Room } from "./room";
 import signal from "../enums/signal";
+import Server from "../server";
 export default class Player {
   private _ws: ws = null;
   public user: User = null;
@@ -24,22 +25,24 @@ export default class Player {
   }
 
   connect() {
-    this._isAlive = true;
-
-    this._onHeartBeat();
-
     this._ws.on("message", (msg) => {
       const result = JSON.parse(
         decodeURIComponent(Buffer.from(msg, "base64").toString())
       );
-
       console.log(
         `收到客户端消息 事件名:${result.eventName} | 结构体:${result}`
       );
 
       switch (result.eventName) {
         case signal.HELLO:
-          this._ansHello(result);
+          this.user = result.data.user as User;
+          if (Server.$.recordLoginPlayerToList(this)) {
+            this._onHeartBeat();
+            this.send(signal.HI);
+          } else {
+            console.log(`${this.user.uname} 重复登录, 登出另一个`);
+            this.send(signal.LOGIN_FAILED);
+          }
           break;
         case signal.JOIN:
           setTimeout(() => {
@@ -54,11 +57,15 @@ export default class Player {
 
     this._ws.on("error", (msg) => {
       console.log("已断开连接： onError");
-      clearInterval(this._pingInterval);
     });
 
     this._ws.on("close", (code: number, reason: string) => {
       console.log(`已断开连接: ${this.user.uname}`);
+      // 错误码: 4000:重复登录，登出
+      if (code !== 4000) {
+        Server.$.removePlayer(this);
+      }
+      this._isAlive = false;
       clearInterval(this._pingInterval);
       if (this.room) {
         this.room.removePlayer(this);
@@ -70,30 +77,20 @@ export default class Player {
   // 服务端心跳检测
   _onHeartBeat() {
     this._ws.on("pong", () => {
-      this._isAlive = true;
       console.log(`心跳检测中 ${this.user.uname}`);
+      this._isAlive = true;
     });
 
     const pingIntervalTime: number = 15000; // 心跳检测间隔 15秒
     this._pingInterval = setInterval(() => {
       if (this._isAlive === false) {
-        console.log(`不再心跳检测： 玩家: ${this.user.uname} 已断开连接`);
-        clearInterval(this._pingInterval);
-
-        if (this.room) {
-          this.room.removePlayer(this);
-          this.room = null;
-        }
+        console.log(`停止心跳检测： 玩家: ${this.user.uname} 已断开连接`);
         return this._ws.terminate();
       }
+
       this._isAlive = false;
       this._ws.ping();
     }, pingIntervalTime);
-  }
-
-  _ansHello(result) {
-    this.user = result.data.user as User;
-    this.send(signal.HI);
   }
 
   _ansJoin(result) {
@@ -129,5 +126,9 @@ export default class Player {
     } catch (err) {
       console.error("服务端发送错误: ", err);
     }
+  }
+
+  closeSocket() {
+    this._ws.close();
   }
 }

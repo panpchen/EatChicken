@@ -20,6 +20,15 @@ var Room = /** @class */ (function () {
     }
     /** 添加编辑客户端到会话 */
     Room.prototype.addPlayer = function (player) {
+        // 判断是否有重复登录的玩家
+        var isRepeatLogin = this.players.some(function (p) {
+            p.user.uname === player.user.uname;
+        });
+        if (isRepeatLogin) {
+            console.log("\u5DF2\u7ECF\u6709\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
+            player.send(signal_1["default"].JOIN);
+            return false;
+        }
         console.log("\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
         this.players.push(player);
         var playerList = [];

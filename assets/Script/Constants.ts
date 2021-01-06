@@ -16,11 +16,12 @@ export enum SERVER_EVENT {
   HELLO = "HELLO", //  hi-hello 握手
   HI = "HI",
   HEARTBEAT = "HEARTBEAT", // 心跳检测
+  LOGIN_FAILED = "LOGIN_FAILED",
 }
 
 export enum GAME_EVENT {
   GAME_MULTIPLAYER = "GAME_MULTIPLAYER",
-  GAME_ENTERGAME = "GAME_ENTERGAME",
+  GAME_LOGINGAME = "GAME_LOGINGAME",
   GAME_START = "GAME_START",
   GAME_JOIN = "GAME_JOIN",
   GAME_LEAVE = "GAME_LEAVE",
@@ -32,13 +33,19 @@ export enum GAME_EVENT {
 }
 
 export enum ALLTIP {
-  CONNECTING = "正在登录中，请稍等",
+  CONNECTING = "正在登录中，请等待",
   DISCONNECT = "断开连接",
-  LOGINSUCCESS = "登录成功",
+  LOGIN_SUCCESS = "登录成功",
+  LOGIN_FAILED = "登录失败，玩家已经登陆过了",
   USERNAME_NULL = "请输入昵称",
   JOINING = "正在加入游戏...",
   JOINSUCCESS = "加入游戏成功",
   INGAME = "你已经在游戏中",
+}
+
+// 服务器关闭原因
+export enum CLOSE_CODE {
+  LOGIN_FAILED = 4000,
 }
 
 export const ServerURl: string = `ws://192.168.19.149:2334`;

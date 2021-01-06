@@ -28,7 +28,7 @@ export default class MainUI extends BaseUI {
     //   this._tweenBtn();
     //   this.btnGroup.resumeSystemEvents(true);
     // }, duration);
-    this.nameLabel.string = `玩家昵称：${PlayerData.uname}`;
+    this.nameLabel.string = `${PlayerData.uname}`;
   }
 
   // _tweenBtn() {

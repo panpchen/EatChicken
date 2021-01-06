@@ -3,6 +3,7 @@ exports.__esModule = true;
 var gameData_1 = require("./gameData");
 var room_1 = require("./room");
 var signal_1 = require("../enums/signal");
+var server_1 = require("../server");
 var Player = /** @class */ (function () {
     function Player(ws) {
         this._ws = null;
@@ -23,14 +24,20 @@ var Player = /** @class */ (function () {
     }
     Player.prototype.connect = function () {
         var _this = this;
-        this._isAlive = true;
-        this._onHeartBeat();
         this._ws.on("message", function (msg) {
             var result = JSON.parse(decodeURIComponent(Buffer.from(msg, "base64").toString()));
             console.log("\u6536\u5230\u5BA2\u6237\u7AEF\u6D88\u606F \u4E8B\u4EF6\u540D:" + result.eventName + " | \u7ED3\u6784\u4F53:" + result);
             switch (result.eventName) {
                 case signal_1["default"].HELLO:
-                    _this._ansHello(result);
+                    _this.user = result.data.user;
+                    if (server_1["default"].$.recordLoginPlayerToList(_this)) {
+                        _this._onHeartBeat();
+                        _this.send(signal_1["default"].HI);
+                    }
+                    else {
+                        console.log(_this.user.uname + " \u91CD\u590D\u767B\u5F55, \u767B\u51FA\u53E6\u4E00\u4E2A");
+                        _this.send(signal_1["default"].LOGIN_FAILED);
+                    }
                     break;
                 case signal_1["default"].JOIN:
                     setTimeout(function () {
@@ -44,10 +51,14 @@ var Player = /** @class */ (function () {
         });
         this._ws.on("error", function (msg) {
             console.log("已断开连接： onError");
-            clearInterval(_this._pingInterval);
         });
         this._ws.on("close", function (code, reason) {
             console.log("\u5DF2\u65AD\u5F00\u8FDE\u63A5: " + _this.user.uname);
+            // 错误码: 4000:重复登录，登出
+            if (code !== 4000) {
+                server_1["default"].$.removePlayer(_this);
+            }
+            _this._isAlive = false;
             clearInterval(_this._pingInterval);
             if (_this.room) {
                 _this.room.removePlayer(_this);
@@ -59,27 +70,18 @@ var Player = /** @class */ (function () {
     Player.prototype._onHeartBeat = function () {
         var _this = this;
         this._ws.on("pong", function () {
-            _this._isAlive = true;
             console.log("\u5FC3\u8DF3\u68C0\u6D4B\u4E2D " + _this.user.uname);
+            _this._isAlive = true;
         });
         var pingIntervalTime = 15000; // 心跳检测间隔 15秒
         this._pingInterval = setInterval(function () {
             if (_this._isAlive === false) {
-                console.log("\u4E0D\u518D\u5FC3\u8DF3\u68C0\u6D4B\uFF1A \u73A9\u5BB6: " + _this.user.uname + " \u5DF2\u65AD\u5F00\u8FDE\u63A5");
-                clearInterval(_this._pingInterval);
-                if (_this.room) {
-                    _this.room.removePlayer(_this);
-                    _this.room = null;
-                }
+                console.log("\u505C\u6B62\u5FC3\u8DF3\u68C0\u6D4B\uFF1A \u73A9\u5BB6: " + _this.user.uname + " \u5DF2\u65AD\u5F00\u8FDE\u63A5");
                 return _this._ws.terminate();
             }
             _this._isAlive = false;
             _this._ws.ping();
         }, pingIntervalTime);
-    };
-    Player.prototype._ansHello = function (result) {
-        this.user = result.data.user;
-        this.send(signal_1["default"].HI);
     };
     Player.prototype._ansJoin = function (result) {
         this.room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
@@ -103,6 +105,9 @@ var Player = /** @class */ (function () {
         catch (err) {
             console.error("服务端发送错误: ", err);
         }
+    };
+    Player.prototype.closeSocket = function () {
+        this._ws.close();
     };
     return Player;
 }());

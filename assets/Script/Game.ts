@@ -63,10 +63,6 @@ export default class Game extends BaseScene {
       case "no":
         cc.log("选择错的");
         break;
-      case "closeServer":
-        Server.Instance.closeServer();
-        cc.log("客户端主动断开连接");
-        break;
     }
   }
 }

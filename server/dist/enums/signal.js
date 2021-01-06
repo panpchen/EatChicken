@@ -10,6 +10,6 @@ exports["default"] = {
     RESULT: "RESULT",
     HELLO: "HELLO",
     HI: "HI",
-    LOSTCONNECTION: "LOSTCONNECTION",
+    LOGIN_FAILED: "LOGIN_FAILED",
     HEARTBEAT: "HEARTBEAT"
 };

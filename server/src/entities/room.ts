@@ -26,8 +26,18 @@ export class Room {
 
   /** 添加编辑客户端到会话 */
   public addPlayer(player: Player) {
-    console.log(`玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
+    // 判断是否有重复登录的玩家
+    const isRepeatLogin = this.players.some((p) => {
+      p.user.uname === player.user.uname;
+    });
 
+    if (isRepeatLogin) {
+      console.log(`已经有玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
+      player.send(signal.JOIN);
+      return false;
+    }
+
+    console.log(`玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
     this.players.push(player);
 
     const playerList = [];

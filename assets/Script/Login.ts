@@ -14,16 +14,16 @@ export default class Login extends cc.Component {
   loginBtn: cc.Node = null;
 
   onLoad() {
-    cc.director.on(GAME_EVENT.GAME_ENTERGAME, this._onEnterGame, this);
+    cc.director.on(GAME_EVENT.GAME_LOGINGAME, this._onLoginGame, this);
     this.loginBtn.on("click", this._onClickLogin, this);
     cc.director.preloadScene("Game");
   }
 
   onDestroy() {
-    cc.director.off(GAME_EVENT.GAME_ENTERGAME, this._onEnterGame, this);
+    cc.director.off(GAME_EVENT.GAME_LOGINGAME, this._onLoginGame, this);
   }
 
-  _onEnterGame() {
+  _onLoginGame() {
     Server.Instance.send(SERVER_EVENT.HELLO, {
       user: {
         uid: PlayerData.uid,
@@ -31,10 +31,6 @@ export default class Login extends cc.Component {
       },
     });
     // this.editBox.string = "";
-
-    this.scheduleOnce(() => {
-      cc.director.loadScene("Game");
-    }, 0.7);
   }
 
   _onClickLogin() {
