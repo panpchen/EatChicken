@@ -37,7 +37,7 @@ export default class Player {
         case signal.HELLO:
           this.user = result.data.user as User;
           if (Server.$.recordLoginPlayerToList(this)) {
-            this._onHeartBeat();
+            this._startHeartBeat();
             this.send(signal.HI);
           } else {
             console.log(`${this.user.uname} 重复登录, 登出另一个`);
@@ -62,6 +62,7 @@ export default class Player {
     this._ws.on("close", (code: number, reason: string) => {
       console.log(`已断开连接: ${this.user.uname}`);
       // 错误码: 4000:重复登录，登出
+      // 如何不是重复登录，不用删除
       if (code !== 4000) {
         Server.$.removePlayer(this);
       }
@@ -75,13 +76,13 @@ export default class Player {
   }
 
   // 服务端心跳检测
-  _onHeartBeat() {
+  _startHeartBeat() {
     this._ws.on("pong", () => {
       console.log(`心跳检测中 ${this.user.uname}`);
       this._isAlive = true;
     });
 
-    const pingIntervalTime: number = 15000; // 心跳检测间隔 15秒
+    this._ws.ping();
     this._pingInterval = setInterval(() => {
       if (this._isAlive === false) {
         console.log(`停止心跳检测： 玩家: ${this.user.uname} 已断开连接`);
@@ -90,7 +91,7 @@ export default class Player {
 
       this._isAlive = false;
       this._ws.ping();
-    }, pingIntervalTime);
+    }, 10000); // 心跳检测间隔 15秒
   }
 
   _ansJoin(result) {

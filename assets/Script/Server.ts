@@ -50,9 +50,9 @@ export default class Server extends cc.Component {
   }
 
   _onOpen(event) {
-    this._heartBeat();
-    cc.director.emit(GAME_EVENT.GAME_LOGINGAME);
     cc.log("已连接服务器,开始登录游戏");
+    this._startHeartBeat();
+    cc.director.emit(GAME_EVENT.GAME_LOGINGAME);
   }
 
   _onMessage({ data }) {
@@ -76,7 +76,7 @@ export default class Server extends cc.Component {
         cc.error("有玩家离开了, 剩余玩家", result.data);
         break;
       case SERVER_EVENT.HEARTBEAT:
-        this._heartBeat();
+        this._startHeartBeat();
         break;
       case SERVER_EVENT.LOGIN_FAILED:
         TipManager.Instance.showTips(ALLTIP.LOGIN_FAILED);
@@ -122,7 +122,7 @@ export default class Server extends cc.Component {
   }
 
   // 客户端心跳检测
-  _heartBeat() {
+  _startHeartBeat() {
     this._clearHeartBeat();
     this._isAlive = true;
     this._pingInterval = setInterval(() => {
@@ -134,7 +134,7 @@ export default class Server extends cc.Component {
       }
       this._isAlive = false;
       this.send(SERVER_EVENT.HEARTBEAT);
-    }, 5000);
+    }, 10000);
   }
 
   _clearHeartBeat() {

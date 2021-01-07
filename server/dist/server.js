@@ -96,11 +96,11 @@ var Server = /** @class */ (function () {
         return false;
     };
     Server.prototype.removePlayer = function (player) {
-        for (var i = this._loginPlayers.length - 1; i >= 0; i--) {
-            if (this._loginPlayers[i].user.uname === player.user.uname) {
-                this._loginPlayers.splice(i, 1);
-                break;
-            }
+        var delIndex = this._loginPlayers.findIndex(function (p) {
+            return p.user.uname === player.user.uname;
+        });
+        if (delIndex !== -1) {
+            this._loginPlayers.splice(delIndex, 1);
         }
     };
     Server.$ = null;

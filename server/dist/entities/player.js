@@ -31,7 +31,7 @@ var Player = /** @class */ (function () {
                 case signal_1["default"].HELLO:
                     _this.user = result.data.user;
                     if (server_1["default"].$.recordLoginPlayerToList(_this)) {
-                        _this._onHeartBeat();
+                        _this._startHeartBeat();
                         _this.send(signal_1["default"].HI);
                     }
                     else {
@@ -55,6 +55,7 @@ var Player = /** @class */ (function () {
         this._ws.on("close", function (code, reason) {
             console.log("\u5DF2\u65AD\u5F00\u8FDE\u63A5: " + _this.user.uname);
             // 错误码: 4000:重复登录，登出
+            // 如何不是重复登录，不用删除
             if (code !== 4000) {
                 server_1["default"].$.removePlayer(_this);
             }
@@ -67,13 +68,13 @@ var Player = /** @class */ (function () {
         });
     };
     // 服务端心跳检测
-    Player.prototype._onHeartBeat = function () {
+    Player.prototype._startHeartBeat = function () {
         var _this = this;
         this._ws.on("pong", function () {
             console.log("\u5FC3\u8DF3\u68C0\u6D4B\u4E2D " + _this.user.uname);
             _this._isAlive = true;
         });
-        var pingIntervalTime = 15000; // 心跳检测间隔 15秒
+        this._ws.ping();
         this._pingInterval = setInterval(function () {
             if (_this._isAlive === false) {
                 console.log("\u505C\u6B62\u5FC3\u8DF3\u68C0\u6D4B\uFF1A \u73A9\u5BB6: " + _this.user.uname + " \u5DF2\u65AD\u5F00\u8FDE\u63A5");
@@ -81,7 +82,7 @@ var Player = /** @class */ (function () {
             }
             _this._isAlive = false;
             _this._ws.ping();
-        }, pingIntervalTime);
+        }, 10000); // 心跳检测间隔 15秒
     };
     Player.prototype._ansJoin = function (result) {
         this.room = room_1.Room.findRoomWithSeat() || room_1.Room.create();

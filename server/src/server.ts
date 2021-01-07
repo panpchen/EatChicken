@@ -58,11 +58,12 @@ export default class Server {
   }
 
   removePlayer(player: Player) {
-    for (let i = this._loginPlayers.length - 1; i >= 0; i--) {
-      if (this._loginPlayers[i].user.uname === player.user.uname) {
-        this._loginPlayers.splice(i, 1);
-        break;
-      }
+    const delIndex = this._loginPlayers.findIndex((p) => {
+      return p.user.uname === player.user.uname;
+    });
+
+    if (delIndex !== -1) {
+      this._loginPlayers.splice(delIndex, 1);
     }
   }
 }
