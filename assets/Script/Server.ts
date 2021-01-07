@@ -37,7 +37,7 @@ export default class Server extends cc.Component {
     }
 
     if (this._isAlive) {
-      TipManager.Instance.showTips(ALLTIP.INGAME);
+      TipManager.Instance.showTips(ALLTIP.LOGIN_SUCCESS);
       return;
     }
 
@@ -83,6 +83,9 @@ export default class Server extends cc.Component {
         this.scheduleOnce(() => {
           this._ws.close(CLOSE_CODE.LOGIN_FAILED);
         }, 1);
+        break;
+      case SERVER_EVENT.JOIN_FAILED:
+        TipManager.Instance.showTips(ALLTIP.INGAME);
         break;
     }
   }

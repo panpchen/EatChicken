@@ -47,7 +47,7 @@ export default class Player {
         case signal.JOIN:
           setTimeout(() => {
             this._ansJoin(result);
-          }, 1000);
+          }, 500);
           break;
         case signal.HEARTBEAT:
           this._ansHeartBeat();
@@ -64,7 +64,7 @@ export default class Player {
       // 错误码: 4000:重复登录，登出
       // 如何不是重复登录，不用删除
       if (code !== 4000) {
-        Server.$.removePlayer(this);
+        Server.$.removeLoginPlayer(this);
       }
       this._isAlive = false;
       clearInterval(this._pingInterval);
@@ -95,11 +95,15 @@ export default class Player {
   }
 
   _ansJoin(result) {
-    this.room = Room.findRoomWithSeat() || Room.create();
-    this.room.addPlayer(this);
-    if (this.room.isFull()) {
-      console.log("到达房间人数，准备开始游戏");
-      // this.room.playGame();
+    if (Server.$.recordJoinPlayerToList(this)) {
+      this.room = Room.findRoomWithSeat() || Room.create();
+      this.room.addPlayer(this);
+      if (this.room.isFull()) {
+        console.log("到达房间人数，准备开始游戏");
+        // this.room.playGame();
+      }
+    } else {
+      this.send(signal.JOIN_FAILED);
     }
   }
 

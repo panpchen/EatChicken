@@ -15,27 +15,23 @@ var Room = /** @class */ (function () {
     function Room() {
         this.id = "room" + nextRoomId++;
         // 当前房间所有玩家
-        this.players = [];
-        this.players = [];
+        this._players = [];
+        this._players = [];
     }
     /** 添加编辑客户端到会话 */
     Room.prototype.addPlayer = function (player) {
-        // 判断是否有重复登录的玩家
-        var isRepeatLogin = this.players.some(function (p) {
-            p.user.uname === player.user.uname;
+        var isRepeat = this._players.some(function (p) {
+            return p.user.uname === player.user.uname;
         });
-        if (isRepeatLogin) {
-            console.log("\u5DF2\u7ECF\u6709\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
-            player.send(signal_1["default"].JOIN);
-            return false;
+        if (!isRepeat) {
+            console.log("\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
+            this._players.push(player);
         }
-        console.log("\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
-        this.players.push(player);
         var playerList = [];
-        this.players.forEach(function (player) {
+        this._players.forEach(function (player) {
             playerList.push(player.user);
         });
-        this.players.forEach(function (player) {
+        this._players.forEach(function (player) {
             player.send(signal_1["default"].JOIN, playerList);
         });
         // setTimeout(() => {
@@ -48,21 +44,22 @@ var Room = /** @class */ (function () {
     };
     /** 从会话删除指定编辑客户端 */
     Room.prototype.removePlayer = function (player) {
-        var clientIndex = this.players.indexOf(player);
+        var clientIndex = this._players.indexOf(player);
         if (clientIndex != -1) {
-            this.players.splice(clientIndex, 1);
+            this._players.splice(clientIndex, 1);
             player = null;
         }
+        // 玩家离开通知所有其他玩家
         var playerList = [];
-        this.players.forEach(function (player) {
+        this._players.forEach(function (player) {
             playerList.push(player.user);
         });
-        this.players.forEach(function (player) {
+        this._players.forEach(function (player) {
             console.log("当前大厅玩家：", playerList);
             player.send(signal_1["default"].LEAVE, playerList);
         });
         // 如果房间只剩一个人，此人离开则房间解散
-        if (this.players.length === 0) {
+        if (this._players.length === 0) {
             var roomIndex = globalRoomList.indexOf(this);
             if (roomIndex > -1) {
                 globalRoomList.splice(roomIndex, 1);
@@ -70,19 +67,19 @@ var Room = /** @class */ (function () {
         }
     };
     Room.prototype.isFull = function () {
-        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + this.players.length + "/" + MAX_ROOT_MEMBER);
-        return this.players.length == MAX_ROOT_MEMBER;
+        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + this._players.length + "/" + MAX_ROOT_MEMBER);
+        return this._players.length == MAX_ROOT_MEMBER;
     };
     Room.prototype.playGame = function () {
         console.log("游戏准备开始");
-        this.players.forEach(function (player) {
+        this._players.forEach(function (player) {
             player.gameData.totalCoin = 0;
             player.gameData.totalScore = 0;
         });
-        var roomUsers = this.players.map(function (player) {
+        var roomUsers = this._players.map(function (player) {
             return Object.assign({}, player.user, player.gameData);
         });
-        this.players.forEach(function (player) {
+        this._players.forEach(function (player) {
             player.send(signal_1["default"].START, {
                 gameTime: GAME_TIME,
                 roomUsers: roomUsers

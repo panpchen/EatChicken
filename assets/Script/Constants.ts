@@ -7,6 +7,7 @@
 
 export enum SERVER_EVENT {
   JOIN = "JOIN",
+  JOIN_FAILED = "JOIN_FAILED",
   START = "START",
   LEAVE = "LEAVE",
   CORRECT = "CORRECT",
@@ -36,14 +37,14 @@ export enum ALLTIP {
   CONNECTING = "正在登录中，请等待",
   DISCONNECT = "断开连接",
   LOGIN_SUCCESS = "登录成功",
-  LOGIN_FAILED = "登录失败，玩家已经登陆过了",
+  LOGIN_FAILED = "登录失败，你已经登陆过了",
   USERNAME_NULL = "请输入昵称",
   JOINING = "正在加入游戏...",
   JOINSUCCESS = "加入游戏成功",
   INGAME = "你已经在游戏中",
 }
 
-// 服务器关闭原因
+// 服务器断线原因
 export enum CLOSE_CODE {
   LOGIN_FAILED = 4000,
 }

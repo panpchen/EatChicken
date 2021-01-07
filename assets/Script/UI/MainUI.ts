@@ -38,11 +38,6 @@ export default class MainUI extends BaseUI {
   // }
 
   clickGo() {
-    if (GameData.playing) {
-      TipManager.Instance.showTips(ALLTIP.INGAME);
-      return;
-    }
-
     TipManager.Instance.showTips(ALLTIP.JOINING);
     Server.Instance.send(SERVER_EVENT.JOIN);
   }

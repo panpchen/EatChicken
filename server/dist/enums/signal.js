@@ -2,6 +2,7 @@
 exports.__esModule = true;
 exports["default"] = {
     JOIN: "JOIN",
+    JOIN_FAILED: "JOIN_FAILED",
     START: "START",
     LEAVE: "LEAVE",
     CORRECT: "CORRECT",

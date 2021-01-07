@@ -42,7 +42,7 @@ var Player = /** @class */ (function () {
                 case signal_1["default"].JOIN:
                     setTimeout(function () {
                         _this._ansJoin(result);
-                    }, 1000);
+                    }, 500);
                     break;
                 case signal_1["default"].HEARTBEAT:
                     _this._ansHeartBeat();
@@ -57,7 +57,7 @@ var Player = /** @class */ (function () {
             // 错误码: 4000:重复登录，登出
             // 如何不是重复登录，不用删除
             if (code !== 4000) {
-                server_1["default"].$.removePlayer(_this);
+                server_1["default"].$.removeLoginPlayer(_this);
             }
             _this._isAlive = false;
             clearInterval(_this._pingInterval);
@@ -85,11 +85,16 @@ var Player = /** @class */ (function () {
         }, 10000); // 心跳检测间隔 15秒
     };
     Player.prototype._ansJoin = function (result) {
-        this.room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
-        this.room.addPlayer(this);
-        if (this.room.isFull()) {
-            console.log("到达房间人数，准备开始游戏");
-            // this.room.playGame();
+        if (server_1["default"].$.recordJoinPlayerToList(this)) {
+            this.room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
+            this.room.addPlayer(this);
+            if (this.room.isFull()) {
+                console.log("到达房间人数，准备开始游戏");
+                // this.room.playGame();
+            }
+        }
+        else {
+            this.send(signal_1["default"].JOIN_FAILED);
         }
     };
     Player.prototype._ansHeartBeat = function () {

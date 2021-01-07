@@ -18,34 +18,29 @@ let nextRoomId = 0;
 export class Room {
   public readonly id = `room${nextRoomId++}`;
   // 当前房间所有玩家
-  public readonly players: Player[] = [];
+  private readonly _players: Player[] = [];
 
   private constructor() {
-    this.players = [];
+    this._players = [];
   }
 
   /** 添加编辑客户端到会话 */
   public addPlayer(player: Player) {
-    // 判断是否有重复登录的玩家
-    const isRepeatLogin = this.players.some((p) => {
-      p.user.uname === player.user.uname;
+    const isRepeat = this._players.some((p) => {
+      return p.user.uname === player.user.uname;
     });
 
-    if (isRepeatLogin) {
-      console.log(`已经有玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
-      player.send(signal.JOIN);
-      return false;
+    if (!isRepeat) {
+      console.log(`玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
+      this._players.push(player);
     }
 
-    console.log(`玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
-    this.players.push(player);
-
     const playerList = [];
-    this.players.forEach((player) => {
+    this._players.forEach((player) => {
       playerList.push(player.user);
     });
 
-    this.players.forEach((player) => {
+    this._players.forEach((player) => {
       player.send(signal.JOIN, playerList);
     });
 
@@ -60,23 +55,24 @@ export class Room {
 
   /** 从会话删除指定编辑客户端 */
   public removePlayer(player: Player) {
-    const clientIndex = this.players.indexOf(player);
+    const clientIndex = this._players.indexOf(player);
     if (clientIndex != -1) {
-      this.players.splice(clientIndex, 1);
+      this._players.splice(clientIndex, 1);
       player = null;
     }
 
+    // 玩家离开通知所有其他玩家
     const playerList = [];
-    this.players.forEach((player) => {
+    this._players.forEach((player) => {
       playerList.push(player.user);
     });
-    this.players.forEach((player) => {
+    this._players.forEach((player) => {
       console.log("当前大厅玩家：", playerList);
       player.send(signal.LEAVE, playerList);
     });
 
     // 如果房间只剩一个人，此人离开则房间解散
-    if (this.players.length === 0) {
+    if (this._players.length === 0) {
       const roomIndex = globalRoomList.indexOf(this);
       if (roomIndex > -1) {
         globalRoomList.splice(roomIndex, 1);
@@ -85,20 +81,20 @@ export class Room {
   }
 
   public isFull() {
-    console.log(`当前房间人数: ${this.players.length}/${MAX_ROOT_MEMBER}`);
-    return this.players.length == MAX_ROOT_MEMBER;
+    console.log(`当前房间人数: ${this._players.length}/${MAX_ROOT_MEMBER}`);
+    return this._players.length == MAX_ROOT_MEMBER;
   }
 
   public playGame() {
     console.log("游戏准备开始");
-    this.players.forEach((player) => {
+    this._players.forEach((player) => {
       player.gameData.totalCoin = 0;
       player.gameData.totalScore = 0;
     });
-    const roomUsers = this.players.map((player) =>
+    const roomUsers = this._players.map((player) =>
       Object.assign({}, player.user, player.gameData)
     );
-    this.players.forEach((player) => {
+    this._players.forEach((player) => {
       player.send(signal.START, {
         gameTime: GAME_TIME,
         roomUsers,
