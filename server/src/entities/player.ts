@@ -11,7 +11,8 @@ export default class Player {
   public room: Room = null;
   // 玩家是否在线
   private _isAlive: boolean = false;
-  private _pingInterval = null;
+  private _pingInterval: NodeJS.Timeout = null;
+  private _isGaming: boolean = false;
 
   constructor(ws: ws) {
     this._ws = ws;
@@ -45,9 +46,7 @@ export default class Player {
           }
           break;
         case signal.JOIN:
-          setTimeout(() => {
-            this._ansJoin(result);
-          }, 500);
+          this._ansJoin(result);
           break;
         case signal.HEARTBEAT:
           this._ansHeartBeat();
@@ -66,8 +65,10 @@ export default class Player {
       if (code !== 4000) {
         Server.$.removeLoginPlayer(this);
       }
-      this._isAlive = false;
+      Server.$.removeJoinPlayer(this);
       clearInterval(this._pingInterval);
+      this._isAlive = false;
+      this._isGaming = false;
       if (this.room) {
         this.room.removePlayer(this);
         this.room = null;
@@ -78,14 +79,14 @@ export default class Player {
   // 服务端心跳检测
   _startHeartBeat() {
     this._ws.on("pong", () => {
-      console.log(`心跳检测中 ${this.user.uname}`);
+      // console.log(`心跳检测中 ${this.user.uname}`);
       this._isAlive = true;
     });
 
     this._ws.ping();
     this._pingInterval = setInterval(() => {
       if (this._isAlive === false) {
-        console.log(`停止心跳检测： 玩家: ${this.user.uname} 已断开连接`);
+        // console.log(`停止心跳检测： 玩家: ${this.user.uname} 已断开连接`);
         return this._ws.terminate();
       }
 

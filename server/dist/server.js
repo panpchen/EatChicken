@@ -43,7 +43,7 @@ var Server = /** @class */ (function () {
     function Server() {
         this.config = null;
         this._loginPlayers = []; // 记录登录过的玩家
-        this._joinPlayer = []; // 记录加入游戏的玩家
+        this._joinPlayers = []; // 记录加入游戏的玩家
         Server.$ = this;
     }
     Server.prototype.init = function () {
@@ -105,21 +105,21 @@ var Server = /** @class */ (function () {
         }
     };
     Server.prototype.recordJoinPlayerToList = function (player) {
-        var haveJoin = this._joinPlayer.some(function (p) {
+        var haveJoin = this._joinPlayers.some(function (p) {
             return p.user.uname === player.user.uname;
         });
         if (!haveJoin) {
-            this._joinPlayer.push(player);
+            this._joinPlayers.push(player);
             return true;
         }
         return false;
     };
     Server.prototype.removeJoinPlayer = function (player) {
-        var delIndex = this._joinPlayer.findIndex(function (p) {
+        var delIndex = this._joinPlayers.findIndex(function (p) {
             return p.user.uname === player.user.uname;
         });
         if (delIndex !== -1) {
-            this._joinPlayer.splice(delIndex, 1);
+            this._joinPlayers.splice(delIndex, 1);
         }
     };
     Server.$ = null;

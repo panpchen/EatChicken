@@ -6,7 +6,7 @@ export default class Server {
   public static $: Server = null;
   public config: any = null;
   private _loginPlayers: Player[] = []; // 记录登录过的玩家
-  private _joinPlayer: Player[] = []; // 记录加入游戏的玩家
+  private _joinPlayers: Player[] = []; // 记录加入游戏的玩家
 
   constructor() {
     Server.$ = this;
@@ -69,12 +69,12 @@ export default class Server {
   }
 
   recordJoinPlayerToList(player: Player) {
-    const haveJoin = this._joinPlayer.some((p) => {
+    const haveJoin = this._joinPlayers.some((p) => {
       return p.user.uname === player.user.uname;
     });
 
     if (!haveJoin) {
-      this._joinPlayer.push(player);
+      this._joinPlayers.push(player);
       return true;
     }
 
@@ -82,12 +82,12 @@ export default class Server {
   }
 
   removeJoinPlayer(player: Player) {
-    const delIndex = this._joinPlayer.findIndex((p) => {
+    const delIndex = this._joinPlayers.findIndex((p) => {
       return p.user.uname === player.user.uname;
     });
 
     if (delIndex !== -1) {
-      this._joinPlayer.splice(delIndex, 1);
+      this._joinPlayers.splice(delIndex, 1);
     }
   }
 }

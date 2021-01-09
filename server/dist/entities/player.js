@@ -13,6 +13,7 @@ var Player = /** @class */ (function () {
         // 玩家是否在线
         this._isAlive = false;
         this._pingInterval = null;
+        this._isGaming = false;
         this._ws = ws;
         this.user = null;
         this.gameData = {
@@ -40,9 +41,7 @@ var Player = /** @class */ (function () {
                     }
                     break;
                 case signal_1["default"].JOIN:
-                    setTimeout(function () {
-                        _this._ansJoin(result);
-                    }, 500);
+                    _this._ansJoin(result);
                     break;
                 case signal_1["default"].HEARTBEAT:
                     _this._ansHeartBeat();
@@ -59,8 +58,10 @@ var Player = /** @class */ (function () {
             if (code !== 4000) {
                 server_1["default"].$.removeLoginPlayer(_this);
             }
-            _this._isAlive = false;
+            server_1["default"].$.removeJoinPlayer(_this);
             clearInterval(_this._pingInterval);
+            _this._isAlive = false;
+            _this._isGaming = false;
             if (_this.room) {
                 _this.room.removePlayer(_this);
                 _this.room = null;
@@ -71,13 +72,13 @@ var Player = /** @class */ (function () {
     Player.prototype._startHeartBeat = function () {
         var _this = this;
         this._ws.on("pong", function () {
-            console.log("\u5FC3\u8DF3\u68C0\u6D4B\u4E2D " + _this.user.uname);
+            // console.log(`心跳检测中 ${this.user.uname}`);
             _this._isAlive = true;
         });
         this._ws.ping();
         this._pingInterval = setInterval(function () {
             if (_this._isAlive === false) {
-                console.log("\u505C\u6B62\u5FC3\u8DF3\u68C0\u6D4B\uFF1A \u73A9\u5BB6: " + _this.user.uname + " \u5DF2\u65AD\u5F00\u8FDE\u63A5");
+                // console.log(`停止心跳检测： 玩家: ${this.user.uname} 已断开连接`);
                 return _this._ws.terminate();
             }
             _this._isAlive = false;

@@ -3,10 +3,10 @@ exports.__esModule = true;
 exports.Room = void 0;
 var signal_1 = require("../enums/signal");
 var globalRoomList = [];
-// 设定开始游戏所需最小人数
-var MAX_ROOT_MEMBER = 2;
-// 等待机器人加入时间
-var ADD_ROBOT_AFTER = 3000;
+// 设定开始游戏所需最大人数
+var MAX_ROOT_MEMBER = 10;
+// 等待加入时间
+var ADD_ROBOT_AFTER = 6000;
 // 游戏时间 10秒
 var GAME_TIME = 10;
 var nextRoomId = 0;
@@ -16,10 +16,16 @@ var Room = /** @class */ (function () {
         this.id = "room" + nextRoomId++;
         // 当前房间所有玩家
         this._players = [];
+        this._isGaming = false;
+        this._timeOut = null;
         this._players = [];
     }
+    Room.prototype.isGaming = function () {
+        return this._isGaming;
+    };
     /** 添加编辑客户端到会话 */
     Room.prototype.addPlayer = function (player) {
+        var _this = this;
         var isRepeat = this._players.some(function (p) {
             return p.user.uname === player.user.uname;
         });
@@ -34,6 +40,14 @@ var Room = /** @class */ (function () {
         this._players.forEach(function (player) {
             player.send(signal_1["default"].JOIN, playerList);
         });
+        // 6秒后游戏开始，房间不能再加入玩家
+        if (!this._timeOut) {
+            console.log("有玩家加入房间,开始计时");
+            this._timeOut = setTimeout(function () {
+                _this._isGaming = true;
+                console.log("游戏开始");
+            }, ADD_ROBOT_AFTER);
+        }
         // setTimeout(() => {
         //   if (this.players.length < MAX_ROOT_MEMBER) {
         //     // const Robot = require("./robot").Robot;
@@ -124,17 +138,21 @@ var Room = /** @class */ (function () {
     //   clients.forEach((client) => {
     //     client.emit("result", { result });
     //   });
+    // this._isGaming = false;
     // }
     Room.all = function () {
         return globalRoomList.slice();
     };
-    // 是否有空位的房间
+    // 可以加入当前房间条件：
+    // 1.有空位 2.游戏未开始
     Room.findRoomWithSeat = function () {
-        return globalRoomList.find(function (x) { return !x.isFull(); });
+        return globalRoomList.find(function (room) {
+            return !room.isFull() && !room.isGaming();
+        });
     };
     Room.create = function () {
         var room = new Room();
-        globalRoomList.unshift(room);
+        globalRoomList.push(room);
         return room;
     };
     return Room;

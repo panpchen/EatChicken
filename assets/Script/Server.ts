@@ -86,6 +86,7 @@ export default class Server extends cc.Component {
         break;
       case SERVER_EVENT.JOIN_FAILED:
         TipManager.Instance.showTips(ALLTIP.INGAME);
+        cc.director.emit(GAME_EVENT.GAME_FAILED);
         break;
     }
   }

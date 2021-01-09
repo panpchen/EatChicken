@@ -21,10 +21,17 @@ export default class Game extends BaseScene {
   onLoad() {
     super.onLoad();
     cc.director.on(GAME_EVENT.GAME_JOIN, this._onJoin, this);
+    cc.director.on(GAME_EVENT.GAME_FAILED, this._onJoinFailed, this);
     cc.director.on(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
     this.selfUUIDLabel.string = `uuid: ${PlayerData.uid}`;
     this.footer.active = false;
     this.topicBar.init();
+  }
+
+  onDestroy() {
+    cc.director.off(GAME_EVENT.GAME_JOIN, this._onJoin, this);
+    cc.director.off(GAME_EVENT.GAME_FAILED, this._onJoinFailed, this);
+    cc.director.off(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
   }
 
   _onJoin(players) {
@@ -40,6 +47,10 @@ export default class Game extends BaseScene {
     this._refreshOnlinePlayerLabel(players);
 
     this._startMatchTime(this._startGame);
+  }
+
+  _onJoinFailed() {
+    UIManager.instance.hideAll();
   }
 
   _startMatchTime(callback?: Function) {
