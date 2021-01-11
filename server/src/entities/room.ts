@@ -1,4 +1,5 @@
 import signal from "../enums/signal";
+import { GameChoice } from "./gameData";
 import Player from "./player";
 
 const globalRoomList: Room[] = [];
@@ -10,7 +11,7 @@ const MAX_ROOT_MEMBER = 10;
 const ADD_ROBOT_AFTER = 6000;
 
 // 游戏时间 10秒
-const GAME_TIME = 10;
+const GAME_TIME = 100000;
 
 let nextRoomId = 0;
 
@@ -52,10 +53,9 @@ export class Room {
 
     // 6秒后游戏开始，房间不能再加入玩家
     if (!this._timeOut) {
-      console.log("有玩家加入房间,开始计时");
+      console.log("加入房间,开始计时");
       this._timeOut = setTimeout(() => {
-        this._isGaming = true;
-        console.log("游戏开始");
+        this._playGame();
       }, ADD_ROBOT_AFTER);
     }
 
@@ -90,7 +90,8 @@ export class Room {
     if (this._players.length === 0) {
       const roomIndex = globalRoomList.indexOf(this);
       if (roomIndex > -1) {
-        globalRoomList.splice(roomIndex, 1);
+        let delRoom = globalRoomList.splice(roomIndex, 1);
+        delRoom = null;
       }
     }
   }
@@ -100,63 +101,65 @@ export class Room {
     return this._players.length == MAX_ROOT_MEMBER;
   }
 
-  public playGame() {
-    console.log("游戏准备开始");
+  private _playGame() {
+    console.log("游戏开始");
+    this._isGaming = true;
     this._players.forEach((player) => {
       player.gameData.totalCoin = 0;
       player.gameData.totalScore = 0;
+      player.gameData.gameChoice = GameChoice.yes;
     });
-    const roomUsers = this._players.map((player) =>
-      Object.assign({}, player.user, player.gameData)
-    );
+
     this._players.forEach((player) => {
       player.send(signal.START, {
         gameTime: GAME_TIME,
-        roomUsers,
       });
     });
-    // setTimeout(() => this.finishGame(), GAME_TIME * 1000);
+
+    // setTimeout(() => this.finishGame(), GAME_TIME);
   }
 
-  // public finishGame() {
-  //   const clients = this.clients;
-  //   for (let i = 0; i < MAX_ROOT_MEMBER; i++) {
-  //     let player1 = clients[i];
-  //     if (!player1) break;
-  //     for (let j = i + 1; j < MAX_ROOT_MEMBER; j++) {
-  //       let player2 = clients[j];
-  //       // 逃走的 2 号玩家
-  //       const result = judge(player1.gameData.choice, player2.gameData.choice);
-  //       if (result < 0) {
-  //         player1.gameData.roundScore += 1;
-  //         player2.gameData.roundScore -= 1;
-  //       } else if (result > 0) {
-  //         player1.gameData.roundScore -= 1;
-  //         player2.gameData.roundScore += 1;
-  //       }
-  //     }
-  //   }
-  //   clients.forEach((client) => {
-  //     const gameData = client.gameData;
-  //     if (gameData.roundScore > 0) {
-  //       gameData.winStreak++;
-  //       gameData.roundScore *= gameData.winStreak;
-  //     } else if (gameData.roundScore < 0) {
-  //       gameData.roundScore = 0;
-  //       gameData.winStreak = 0;
-  //     }
-  //     gameData.totalScore += gameData.roundScore;
-  //   });
-  //   const result = clients.map((client) => {
-  //     const { uid } = client.user;
-  //     const { roundScore, totalScore, winStreak, choice } = client.gameData;
-  //     return { uid, roundScore, totalScore, winStreak, choice };
-  //   });
-  //   clients.forEach((client) => {
-  //     client.emit("result", { result });
-  //   });
-  // this._isGaming = false;
-  // }
+  public finishGame() {
+    console.log("游戏时间到，结束");
+    return;
+    // const clients = this.clients;
+    // for (let i = 0; i < MAX_ROOT_MEMBER; i++) {
+    //   let player1 = clients[i];
+    //   if (!player1) break;
+    //   for (let j = i + 1; j < MAX_ROOT_MEMBER; j++) {
+    //     let player2 = clients[j];
+    //     // 逃走的 2 号玩家
+    //     const result = judge(player1.gameData.choice, player2.gameData.choice);
+    //     if (result < 0) {
+    //       player1.gameData.roundScore += 1;
+    //       player2.gameData.roundScore -= 1;
+    //     } else if (result > 0) {
+    //       player1.gameData.roundScore -= 1;
+    //       player2.gameData.roundScore += 1;
+    //     }
+    //   }
+    // }
+    // clients.forEach((client) => {
+    //   const gameData = client.gameData;
+    //   if (gameData.roundScore > 0) {
+    //     gameData.winStreak++;
+    //     gameData.roundScore *= gameData.winStreak;
+    //   } else if (gameData.roundScore < 0) {
+    //     gameData.roundScore = 0;
+    //     gameData.winStreak = 0;
+    //   }
+    //   gameData.totalScore += gameData.roundScore;
+    // });
+    // const result = clients.map((client) => {
+    //   const { uid } = client.user;
+    //   const { roundScore, totalScore, winStreak, choice } = client.gameData;
+    //   return { uid, roundScore, totalScore, winStreak, choice };
+    // });
+    // clients.forEach((client) => {
+    //   client.emit("result", { result });
+    // });
+    // this._isGaming = false;
+  }
 
   public static all() {
     return globalRoomList.slice();

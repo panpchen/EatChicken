@@ -20,12 +20,33 @@ export default class TopicBar extends cc.Component {
 
   init() {
     this.timeLabel.string = "0";
-    this.tip.active = false;
-    this.topicLabel.node.active = false;
-    this.staticLabel.active = true;
+    this.showTip(false);
+    this.onShowLabel(this.topicLabel.node, false);
+    this.onShowLabel(this.staticLabel, true);
   }
 
   updateTime(time: number) {
     this.timeLabel.string = `${time}`;
+  }
+
+  updateTopicContent(str: string) {
+    this.topicLabel.string = str;
+  }
+
+  onShowLabel(node: cc.Node, isShow: boolean) {
+    node.active = isShow;
+  }
+
+  showTip(isShow: boolean, topicNum?: number) {
+    this.tip.active = isShow;
+    if (this.tip.active) {
+      this.tip
+        .getChildByName("label")
+        .getComponent(cc.Label).string = `第${topicNum}题`;
+
+      this.scheduleOnce(() => {
+        this.tip.active = false;
+      }, 1);
+    }
   }
 }

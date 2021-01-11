@@ -15,7 +15,6 @@ export default class TipManager extends cc.Component {
   tipPrefab: cc.Prefab = null;
   private _tip: cc.Node = null;
   public static Instance: TipManager = null;
-
   onLoad() {
     cc.game.addPersistRootNode(this.node);
     TipManager.Instance = this;

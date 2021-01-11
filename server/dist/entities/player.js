@@ -13,7 +13,6 @@ var Player = /** @class */ (function () {
         // 玩家是否在线
         this._isAlive = false;
         this._pingInterval = null;
-        this._isGaming = false;
         this._ws = ws;
         this.user = null;
         this.gameData = {
@@ -61,7 +60,6 @@ var Player = /** @class */ (function () {
             server_1["default"].$.removeJoinPlayer(_this);
             clearInterval(_this._pingInterval);
             _this._isAlive = false;
-            _this._isGaming = false;
             if (_this.room) {
                 _this.room.removePlayer(_this);
                 _this.room = null;
@@ -89,10 +87,6 @@ var Player = /** @class */ (function () {
         if (server_1["default"].$.recordJoinPlayerToList(this)) {
             this.room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
             this.room.addPlayer(this);
-            if (this.room.isFull()) {
-                console.log("到达房间人数，准备开始游戏");
-                // this.room.playGame();
-            }
         }
         else {
             this.send(signal_1["default"].JOIN_FAILED);

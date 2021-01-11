@@ -71,6 +71,9 @@ export default class Server extends cc.Component {
       case SERVER_EVENT.JOIN:
         cc.director.emit(GAME_EVENT.GAME_JOIN, result.data);
         break;
+      case SERVER_EVENT.START:
+        cc.director.emit(GAME_EVENT.GAME_START, result.data);
+        break;
       case SERVER_EVENT.LEAVE:
         cc.director.emit(GAME_EVENT.GAME_LEAVE, result.data);
         cc.error("有玩家离开了, 剩余玩家", result.data);

@@ -12,7 +12,6 @@ export default class Player {
   // 玩家是否在线
   private _isAlive: boolean = false;
   private _pingInterval: NodeJS.Timeout = null;
-  private _isGaming: boolean = false;
 
   constructor(ws: ws) {
     this._ws = ws;
@@ -68,7 +67,6 @@ export default class Player {
       Server.$.removeJoinPlayer(this);
       clearInterval(this._pingInterval);
       this._isAlive = false;
-      this._isGaming = false;
       if (this.room) {
         this.room.removePlayer(this);
         this.room = null;
@@ -99,10 +97,6 @@ export default class Player {
     if (Server.$.recordJoinPlayerToList(this)) {
       this.room = Room.findRoomWithSeat() || Room.create();
       this.room.addPlayer(this);
-      if (this.room.isFull()) {
-        console.log("到达房间人数，准备开始游戏");
-        // this.room.playGame();
-      }
     } else {
       this.send(signal.JOIN_FAILED);
     }

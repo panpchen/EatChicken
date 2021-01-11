@@ -11,8 +11,6 @@ const { ccclass, property } = cc._decorator;
 export default class Game extends BaseScene {
   @property(cc.Label)
   playerListLabel: cc.Label = null;
-  @property(cc.Label)
-  selfUUIDLabel: cc.Label = null;
   @property(cc.Node)
   footer: cc.Node = null;
   @property(TopicBar)
@@ -22,45 +20,53 @@ export default class Game extends BaseScene {
     super.onLoad();
     cc.director.on(GAME_EVENT.GAME_JOIN, this._onJoin, this);
     cc.director.on(GAME_EVENT.GAME_FAILED, this._onJoinFailed, this);
+    cc.director.on(GAME_EVENT.GAME_START, this._onGameStart, this);
     cc.director.on(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
-    this.selfUUIDLabel.string = `uuid: ${PlayerData.uid}`;
     this.footer.active = false;
     this.topicBar.init();
   }
 
   onDestroy() {
     cc.director.off(GAME_EVENT.GAME_JOIN, this._onJoin, this);
+    cc.director.off(GAME_EVENT.GAME_START, this._onGameStart, this);
     cc.director.off(GAME_EVENT.GAME_FAILED, this._onJoinFailed, this);
     cc.director.off(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
+  }
+
+  _onGameStart(data) {
+    this.topicBar.onShowLabel(this.topicBar.staticLabel, false);
+    this.topicBar.onShowLabel(this.topicBar.topicLabel.node, true);
+    this.topicBar.updateTopicContent("这时第1题");
+    this.topicBar.showTip(true, 1);
+    this.footer.active = true;
+    cc.error("游戏时间: ", data);
   }
 
   _onJoin(players) {
     // 判断最后加入的玩家是否是自己
     const lastJoinPlayer = players[players.length - 1];
     if (PlayerData.isSelf(lastJoinPlayer.uid)) {
-      cc.log("玩家加入成功, 游戏状态: ", GameData.playing);
+      cc.log("玩家加入成功, 游戏状态isPlaying: ", GameData.playing);
       GameData.playing = true;
       TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
       UIManager.instance.hideAll();
     }
 
     this._refreshOnlinePlayerLabel(players);
-
-    this._startMatchTime(this._startGame);
+    this._startMatchTime();
   }
 
   _onJoinFailed() {
     UIManager.instance.hideAll();
   }
 
-  _startMatchTime(callback?: Function) {
+  _startMatchTime() {
     let matchTime: number = 6;
     this.schedule(
       () => {
         this.topicBar.updateTime(matchTime);
         if (matchTime <= 0) {
           cc.log("匹配时间到");
-          callback && callback();
           this.unscheduleAllCallbacks();
         }
         matchTime--;
@@ -69,10 +75,6 @@ export default class Game extends BaseScene {
       cc.macro.REPEAT_FOREVER,
       0.01
     );
-  }
-
-  _startGame() {
-    cc.log("游戏正式开始");
   }
 
   _onLeave(players) {
