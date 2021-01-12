@@ -8,8 +8,8 @@ var globalRoomList = [];
 var MAX_ROOT_MEMBER = 10;
 // 等待加入时间
 var ADD_ROBOT_AFTER = 6000;
-// 游戏时间 10秒
-var GAME_TIME = 100000;
+// 答题游戏时间
+var GAME_TIME = 8000;
 var nextRoomId = 0;
 /** 表示一个房间 */
 var Room = /** @class */ (function () {

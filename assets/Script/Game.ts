@@ -1,8 +1,9 @@
 import BaseScene from "./BaseScene";
 import { ALLTIP, GAME_EVENT } from "./Constants";
 import { GameData, PlayerData } from "./GameData";
+import PlayerManager from "./PlayerManager";
 import TipManager from "./TipManager";
-import TopicBar from "./TopicBar";
+import TopicBar, { FontColorType } from "./TopicBar";
 import { UIManager } from "./UI/UIManager";
 
 const { ccclass, property } = cc._decorator;
@@ -15,6 +16,8 @@ export default class Game extends BaseScene {
   footer: cc.Node = null;
   @property(TopicBar)
   topicBar: TopicBar = null;
+  @property(PlayerManager)
+  playerManager: PlayerManager = null;
 
   onLoad() {
     super.onLoad();
@@ -34,12 +37,14 @@ export default class Game extends BaseScene {
   }
 
   _onGameStart(data) {
-    this.topicBar.onShowLabel(this.topicBar.staticLabel, false);
-    this.topicBar.onShowLabel(this.topicBar.topicLabel.node, true);
-    this.topicBar.updateTopicContent("这时第1题");
-    this.topicBar.showTip(true, 1);
+    this.unscheduleAllCallbacks();
+    this.topicBar.staticLabel.active = false;
+    this.topicBar.topicLabel.node.active = true;
+    this.topicBar.startGameTime();
+    this.topicBar.updateTopicContent("这是第1题");
+    this.topicBar.showTopicTip(true, 1);
     this.footer.active = true;
-    cc.error("游戏时间: ", data);
+    cc.error("游戏时间: ", data.gameTime);
   }
 
   _onJoin(players) {
@@ -53,28 +58,12 @@ export default class Game extends BaseScene {
     }
 
     this._refreshOnlinePlayerLabel(players);
-    this._startMatchTime();
+    this.playerManager.createPlayer();
+    this.topicBar.startMatchTime();
   }
 
   _onJoinFailed() {
     UIManager.instance.hideAll();
-  }
-
-  _startMatchTime() {
-    let matchTime: number = 6;
-    this.schedule(
-      () => {
-        this.topicBar.updateTime(matchTime);
-        if (matchTime <= 0) {
-          cc.log("匹配时间到");
-          this.unscheduleAllCallbacks();
-        }
-        matchTime--;
-      },
-      1,
-      cc.macro.REPEAT_FOREVER,
-      0.01
-    );
   }
 
   _onLeave(players) {

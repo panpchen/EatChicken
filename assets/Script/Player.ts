@@ -8,4 +8,11 @@
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export default class PlayerQueue extends cc.Component {}
+export default class Player extends cc.Component {
+  @property(cc.Widget)
+  widget: cc.Widget = null;
+
+  updateWidget() {
+    this.widget.updateAlignment();
+  }
+}

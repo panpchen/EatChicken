@@ -10,8 +10,8 @@ const MAX_ROOT_MEMBER = 10;
 // 等待加入时间
 const ADD_ROBOT_AFTER = 6000;
 
-// 游戏时间 10秒
-const GAME_TIME = 100000;
+// 答题游戏时间
+const GAME_TIME = 8000;
 
 let nextRoomId = 0;
 
