@@ -8,7 +8,7 @@ const globalRoomList: Room[] = [];
 const MAX_ROOT_MEMBER = 10;
 
 // 等待加入时间
-const ADD_ROBOT_AFTER = 6000;
+const ADD_ROBOT_AFTER = 1000000;
 
 // 答题游戏时间
 const GAME_TIME = 8000;
@@ -48,7 +48,7 @@ export class Room {
     });
 
     this._players.forEach((player) => {
-      player.send(signal.JOIN, playerList);
+      player.send(signal.JOIN, { playerList, joinPlayer: player.user });
     });
 
     // 6秒后游戏开始，房间不能再加入玩家
@@ -69,11 +69,10 @@ export class Room {
   }
 
   /** 从会话删除指定编辑客户端 */
-  public removePlayer(player: Player) {
-    const clientIndex = this._players.indexOf(player);
+  public removePlayer(removePlayer: Player) {
+    const clientIndex = this._players.indexOf(removePlayer);
     if (clientIndex != -1) {
       this._players.splice(clientIndex, 1);
-      player = null;
     }
 
     // 玩家离开通知所有其他玩家
@@ -82,9 +81,11 @@ export class Room {
       playerList.push(player.user);
     });
     this._players.forEach((player) => {
-      console.log("当前大厅玩家：", playerList);
-      player.send(signal.LEAVE, playerList);
+      console.log("离开的玩家", removePlayer.user.uname);
+      player.send(signal.LEAVE, { playerList, player: removePlayer.user });
     });
+
+    removePlayer = null;
 
     // 如果房间只剩一个人，此人离开则房间解散
     if (this._players.length === 0) {
