@@ -5,14 +5,22 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-const { ccclass, property } = cc._decorator;
+import { IPlayer } from "./GameData";
 
+const { ccclass, property } = cc._decorator;
 @ccclass
 export default class Player extends cc.Component {
-  @property(cc.Widget)
-  widget: cc.Widget = null;
+  @property(cc.Label)
+  nameLabel: cc.Label = null;
+  private _data: IPlayer = null;
 
-  updateWidget() {
-    this.widget.updateAlignment();
+  init(data: IPlayer) {
+    this._data = data;
+    this.nameLabel.string = data.uname;
+    cc.log("玩家属性: ", this._data);
+  }
+
+  getData() {
+    return this._data;
   }
 }

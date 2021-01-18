@@ -26,7 +26,9 @@ var Player = /** @class */ (function () {
         var _this = this;
         this._ws.on("message", function (msg) {
             var result = JSON.parse(decodeURIComponent(Buffer.from(msg, "base64").toString()));
-            console.log("\u6536\u5230\u5BA2\u6237\u7AEF\u6D88\u606F \u4E8B\u4EF6\u540D:" + result.eventName + " | \u7ED3\u6784\u4F53:" + result);
+            if (result.eventName !== signal_1["default"].HEARTBEAT) {
+                console.log("\u6536\u5230\u5BA2\u6237\u7AEF\u6D88\u606F \u4E8B\u4EF6\u540D:" + result.eventName + " | \u7ED3\u6784\u4F53:" + result);
+            }
             switch (result.eventName) {
                 case signal_1["default"].HELLO:
                     _this.user = result.data.user;
@@ -99,7 +101,9 @@ var Player = /** @class */ (function () {
         try {
             if (this._ws.readyState === this._ws.OPEN &&
                 this._ws.bufferedAmount === 0) {
-                console.log("\u53D1\u9001\u6570\u636E\u5230\u5BA2\u6237\u7AEF\uFF1A\u4E8B\u4EF6\u540D:" + eventName + " | \u7ED3\u6784\u4F53:" + JSON.stringify(data));
+                if (eventName !== signal_1["default"].HEARTBEAT) {
+                    console.log("\u53D1\u9001\u6570\u636E\u5230\u5BA2\u6237\u7AEF\uFF1A\u4E8B\u4EF6\u540D:" + eventName + " | \u7ED3\u6784\u4F53:" + JSON.stringify(data));
+                }
                 this._ws.send(Buffer.from(encodeURIComponent(JSON.stringify({ eventName: eventName, data: data }))).toString("base64"));
             }
         }

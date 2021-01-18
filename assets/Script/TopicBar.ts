@@ -36,7 +36,7 @@ export default class TopicBar extends cc.Component {
 
   update() {
     // 匹配时才显示大数字倒计时
-    if (this._isMatching && this._countTime < 4) {
+    if (this._isMatching && this._countTime >= 0 && this._countTime < 4) {
       this._onShowBigCountDownNum(true);
       this.bigCountDownTimeLabel.string = `${this._countTime}`;
     }

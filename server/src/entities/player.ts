@@ -11,7 +11,7 @@ export default class Player {
   public room: Room = null;
   // 玩家是否在线
   private _isAlive: boolean = false;
-  private _pingInterval: NodeJS.Timeout = null;
+  private _pingInterval = null;
 
   constructor(ws: ws) {
     this._ws = ws;
@@ -29,9 +29,11 @@ export default class Player {
       const result = JSON.parse(
         decodeURIComponent(Buffer.from(msg, "base64").toString())
       );
-      console.log(
-        `收到客户端消息 事件名:${result.eventName} | 结构体:${result}`
-      );
+      if (result.eventName !== signal.HEARTBEAT) {
+        console.log(
+          `收到客户端消息 事件名:${result.eventName} | 结构体:${result}`
+        );
+      }
 
       switch (result.eventName) {
         case signal.HELLO:
@@ -112,11 +114,13 @@ export default class Player {
         this._ws.readyState === this._ws.OPEN &&
         this._ws.bufferedAmount === 0
       ) {
-        console.log(
-          `发送数据到客户端：事件名:${eventName} | 结构体:${JSON.stringify(
-            data
-          )}`
-        );
+        if (eventName !== signal.HEARTBEAT) {
+          console.log(
+            `发送数据到客户端：事件名:${eventName} | 结构体:${JSON.stringify(
+              data
+            )}`
+          );
+        }
         this._ws.send(
           Buffer.from(
             encodeURIComponent(JSON.stringify({ eventName, data }))

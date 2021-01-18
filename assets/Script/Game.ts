@@ -1,9 +1,9 @@
 import BaseScene from "./BaseScene";
 import { ALLTIP, GAME_EVENT } from "./Constants";
-import { GameData, PlayerData } from "./GameData";
+import { GameData, isSelfByName } from "./GameData";
 import PlayerManager from "./PlayerManager";
 import TipManager from "./TipManager";
-import TopicBar, { FontColorType } from "./TopicBar";
+import TopicBar from "./TopicBar";
 import { UIManager } from "./UI/UIManager";
 
 const { ccclass, property } = cc._decorator;
@@ -47,28 +47,29 @@ export default class Game extends BaseScene {
     cc.error("游戏时间: ", data.gameTime);
   }
 
-  _onJoin(players) {
-    // 判断最后加入的玩家是否是自己
-    const lastJoinPlayer = players[players.length - 1];
-    if (PlayerData.isSelf(lastJoinPlayer.uid)) {
-      cc.log("玩家加入成功, 游戏状态isPlaying: ", GameData.playing);
-      GameData.playing = true;
-      TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
-      UIManager.instance.hideAll();
+  _onJoin(data) {
+    if (!GameData.playing) {
+      if (isSelfByName(data.joinPlayer.uname)) {
+        cc.log(`玩家: ${data.joinPlayer.uname}加入成功}`);
+        GameData.playing = true;
+        TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
+        UIManager.instance.hideAll();
+        this.topicBar.startMatchTime();
+      }
     }
 
-    this._refreshOnlinePlayerLabel(players);
-    this.playerManager.createPlayer();
-    this.topicBar.startMatchTime();
+    this._refreshOnlinePlayerLabel(data.playerList);
+    this.playerManager.createPlayer(data.playerList);
   }
 
   _onJoinFailed() {
     UIManager.instance.hideAll();
   }
 
-  _onLeave(players) {
+  _onLeave(data) {
     GameData.playing = false;
-    this._refreshOnlinePlayerLabel(players);
+    this._refreshOnlinePlayerLabel(data.playerList);
+    this.playerManager.removePlayer(data.player);
   }
 
   _refreshOnlinePlayerLabel(players) {

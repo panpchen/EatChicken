@@ -4,10 +4,10 @@ exports.Room = void 0;
 var signal_1 = require("../enums/signal");
 var gameData_1 = require("./gameData");
 var globalRoomList = [];
-// 设定开始游戏所需最大人数
+// 房间最大人数
 var MAX_ROOT_MEMBER = 10;
 // 等待加入时间
-var ADD_ROBOT_AFTER = 6000;
+var ADD_ROBOT_AFTER = 1000000;
 // 答题游戏时间
 var GAME_TIME = 8000;
 var nextRoomId = 0;
@@ -15,11 +15,10 @@ var nextRoomId = 0;
 var Room = /** @class */ (function () {
     function Room() {
         this.id = "room" + nextRoomId++;
-        // 当前房间所有玩家
-        this._players = [];
         this._isGaming = false;
         this._timeOut = null;
-        this._players = [];
+        this._index = -1;
+        this._players = new Map();
     }
     Room.prototype.isGaming = function () {
         return this._isGaming;
@@ -27,19 +26,41 @@ var Room = /** @class */ (function () {
     /** 添加编辑客户端到会话 */
     Room.prototype.addPlayer = function (player) {
         var _this = this;
-        var isRepeat = this._players.some(function (p) {
-            return p.user.uname === player.user.uname;
-        });
-        if (!isRepeat) {
-            console.log("\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
-            this._players.push(player);
+        // 有重复加入的不执行, 对于已经加入的玩家不会再创建一次
+        console.log("\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
+        if (this._players.size === 0) {
+            this._index++;
+            this._players.set(this._index, player);
+            player.user.uindex = this._index;
         }
-        var playerList = [];
-        this._players.forEach(function (player) {
-            playerList.push(player.user);
+        else {
+            var haveEmpty_1 = false;
+            this._players.forEach(function (p, key) {
+                // 寻找空位
+                if (!haveEmpty_1 && p === null) {
+                    _this._players.set(key, player);
+                    player.user.uindex = key;
+                    haveEmpty_1 = true;
+                }
+            });
+            if (!haveEmpty_1) {
+                this._index++;
+                this._players.set(this._index, player);
+                player.user.uindex = this._index;
+            }
+        }
+        var allPlayers = Array.from(this._players.values()).filter(function (p) {
+            return p !== null;
         });
-        this._players.forEach(function (player) {
-            player.send(signal_1["default"].JOIN, playerList);
+        var list = [];
+        allPlayers.forEach(function (p) {
+            list.push(p.user);
+        });
+        allPlayers.forEach(function (p) {
+            p.send(signal_1["default"].JOIN, {
+                playerList: list,
+                joinPlayer: p.user
+            });
         });
         // 6秒后游戏开始，房间不能再加入玩家
         if (!this._timeOut) {
@@ -57,23 +78,41 @@ var Room = /** @class */ (function () {
         // }, ADD_ROBOT_AFTER);
     };
     /** 从会话删除指定编辑客户端 */
-    Room.prototype.removePlayer = function (player) {
-        var clientIndex = this._players.indexOf(player);
-        if (clientIndex != -1) {
-            this._players.splice(clientIndex, 1);
-            player = null;
-        }
-        // 玩家离开通知所有其他玩家
-        var playerList = [];
-        this._players.forEach(function (player) {
-            playerList.push(player.user);
+    Room.prototype.removePlayer = function (removePlayer) {
+        var _this = this;
+        console.log("离开的玩家", removePlayer.user.uname);
+        // 不包含离开的玩家
+        var allPlayers = Array.from(this._players.values()).filter(function (p) {
+            return p !== null && p.user.uname !== removePlayer.user.uname;
         });
-        this._players.forEach(function (player) {
-            console.log("当前大厅玩家：", playerList);
-            player.send(signal_1["default"].LEAVE, playerList);
+        var list = [];
+        allPlayers.forEach(function (p) {
+            list.push(p.user);
+        });
+        // 玩家离开通知所有其他玩家
+        allPlayers.forEach(function (p) {
+            p.send(signal_1["default"].LEAVE, {
+                // 过滤为null的player
+                playerList: list,
+                player: removePlayer.user
+            });
+        });
+        this._players.forEach(function (p, key) {
+            if (p && removePlayer) {
+                if (p.user.uname === removePlayer.user.uname) {
+                    _this._players.set(key, null);
+                    removePlayer = null;
+                }
+            }
         });
         // 如果房间只剩一个人，此人离开则房间解散
-        if (this._players.length === 0) {
+        var isAllNull = true;
+        this._players.forEach(function (p) {
+            if (p) {
+                isAllNull = false;
+            }
+        });
+        if (isAllNull) {
             var roomIndex = globalRoomList.indexOf(this);
             if (roomIndex > -1) {
                 var delRoom = globalRoomList.splice(roomIndex, 1);
@@ -82,18 +121,18 @@ var Room = /** @class */ (function () {
         }
     };
     Room.prototype.isFull = function () {
-        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + this._players.length + "/" + MAX_ROOT_MEMBER);
-        return this._players.length == MAX_ROOT_MEMBER;
+        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + this._players.size + "/" + MAX_ROOT_MEMBER);
+        return this._players.size == MAX_ROOT_MEMBER;
     };
     Room.prototype._playGame = function () {
         console.log("游戏开始");
         this._isGaming = true;
         this._players.forEach(function (player) {
-            player.gameData.totalCoin = 0;
-            player.gameData.totalScore = 0;
-            player.gameData.gameChoice = gameData_1.GameChoice.yes;
-        });
-        this._players.forEach(function (player) {
+            if (player) {
+                player.gameData.totalCoin = 0;
+                player.gameData.totalScore = 0;
+                player.gameData.gameChoice = gameData_1.GameChoice.yes;
+            }
             player.send(signal_1["default"].START, {
                 gameTime: GAME_TIME
             });
@@ -140,6 +179,7 @@ var Room = /** @class */ (function () {
         //   client.emit("result", { result });
         // });
         // this._isGaming = false;
+        // this._index = 0 ;
     };
     Room.all = function () {
         return globalRoomList.slice();
