@@ -1,6 +1,6 @@
 export enum GameChoice {
-  yes,
-  no,
+  correct = 0,
+  wrong = 1,
 }
 
 export interface GameData {

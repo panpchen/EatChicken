@@ -1,5 +1,4 @@
 import signal from "../enums/signal";
-import { GameChoice } from "./gameData";
 import Player from "./player";
 
 const globalRoomList: Room[] = [];
@@ -7,11 +6,11 @@ const globalRoomList: Room[] = [];
 // 房间最大人数
 const MAX_ROOT_MEMBER = 10;
 
-// 等待加入时间
-const ADD_ROBOT_AFTER = 1000000;
+// 等待加入时间  ms
+const ADD_ROBOT_AFTER = 6000;
 
-// 答题游戏时间
-const GAME_TIME = 8000;
+// 答题游戏时间 ms
+const GAME_TIME = 10000;
 
 let nextRoomId = 0;
 
@@ -21,9 +20,12 @@ export class Room {
   // 当前房间所有玩家
   private readonly _players: Map<number, Player>;
 
-  private _isGaming: boolean = false;
-  private _timeOut = null;
+  //  座位号
   private _index: number = -1;
+  private _matchTime: number = ADD_ROBOT_AFTER;
+  private _gameTime: number = GAME_TIME;
+  private _isGaming: boolean = false;
+  private _interval = null;
 
   private constructor() {
     this._players = new Map();
@@ -72,16 +74,11 @@ export class Room {
       p.send(signal.JOIN, {
         playerList: list,
         joinPlayer: p.user,
+        matchTime: this._matchTime,
       });
     });
 
-    // 6秒后游戏开始，房间不能再加入玩家
-    if (!this._timeOut) {
-      console.log("加入房间,开始计时");
-      this._timeOut = setTimeout(() => {
-        this._playGame();
-      }, ADD_ROBOT_AFTER);
-    }
+    this._startCountDown(this._matchTime, this._playGame.bind(this));
 
     // setTimeout(() => {
     //   if (this.players.length < MAX_ROOT_MEMBER) {
@@ -90,6 +87,23 @@ export class Room {
     //     console.log("等待1秒没人加入，自动加入机器人");
     //   }
     // }, ADD_ROBOT_AFTER);
+  }
+
+  private _startCountDown(time: number, callback?: Function) {
+    // 游戏开始，房间不能再加入玩家
+    // console.log("匹配时间: ", time / 1000);
+    if (!this._interval) {
+      this._interval = setInterval(() => {
+        time -= 1000;
+        // console.log("匹配时间: ", time / 1000);
+        if (time <= 0) {
+          time = 0;
+          clearInterval(this._interval);
+          this._interval = null;
+          callback && callback();
+        }
+      }, 1000);
+    }
   }
 
   /** 从会话删除指定编辑客户端 */
@@ -134,10 +148,30 @@ export class Room {
     if (isAllNull) {
       const roomIndex = globalRoomList.indexOf(this);
       if (roomIndex > -1) {
-        let delRoom = globalRoomList.splice(roomIndex, 1);
-        delRoom = null;
+        let room = globalRoomList.splice(roomIndex, 1);
+        room = null;
       }
     }
+  }
+
+  public movePlayerToLeft() {
+    this._players.forEach((p, key) => {
+      let isEmpty = false;
+      if (isEmpty && !p && p.user.uindex >= 0 && p.user.uindex < 9) {
+        isEmpty = true;
+        console.log("左边的空位：", key);
+      }
+    });
+  }
+
+  public movePlayerToRight() {
+    this._players.forEach((p, key) => {
+      let isEmpty = false;
+      if (isEmpty && !p && p.user.uindex >= 9) {
+        isEmpty = true;
+        console.log("右边的空位：", key);
+      }
+    });
   }
 
   public isFull() {
@@ -150,20 +184,16 @@ export class Room {
     this._isGaming = true;
     this._players.forEach((player) => {
       if (player) {
-        player.gameData.totalCoin = 0;
-        player.gameData.totalScore = 0;
-        player.gameData.gameChoice = GameChoice.yes;
+        player.reset();
+        player.send(signal.START, {
+          gameTime: this._gameTime,
+        });
       }
-
-      player.send(signal.START, {
-        gameTime: GAME_TIME,
-      });
     });
-
-    // setTimeout(() => this.finishGame(), GAME_TIME);
+    this._startCountDown(this._gameTime, this._finishGame.bind(this));
   }
 
-  public finishGame() {
+  private _finishGame() {
     console.log("游戏时间到，结束");
     return;
     // const clients = this.clients;

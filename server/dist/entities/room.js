@@ -2,22 +2,24 @@
 exports.__esModule = true;
 exports.Room = void 0;
 var signal_1 = require("../enums/signal");
-var gameData_1 = require("./gameData");
 var globalRoomList = [];
 // 房间最大人数
 var MAX_ROOT_MEMBER = 10;
-// 等待加入时间
-var ADD_ROBOT_AFTER = 1000000;
-// 答题游戏时间
-var GAME_TIME = 8000;
+// 等待加入时间  ms
+var ADD_ROBOT_AFTER = 6000;
+// 答题游戏时间 ms
+var GAME_TIME = 10000;
 var nextRoomId = 0;
 /** 表示一个房间 */
 var Room = /** @class */ (function () {
     function Room() {
         this.id = "room" + nextRoomId++;
-        this._isGaming = false;
-        this._timeOut = null;
+        //  座位号
         this._index = -1;
+        this._matchTime = ADD_ROBOT_AFTER;
+        this._gameTime = GAME_TIME;
+        this._isGaming = false;
+        this._interval = null;
         this._players = new Map();
     }
     Room.prototype.isGaming = function () {
@@ -59,16 +61,11 @@ var Room = /** @class */ (function () {
         allPlayers.forEach(function (p) {
             p.send(signal_1["default"].JOIN, {
                 playerList: list,
-                joinPlayer: p.user
+                joinPlayer: p.user,
+                matchTime: _this._matchTime
             });
         });
-        // 6秒后游戏开始，房间不能再加入玩家
-        if (!this._timeOut) {
-            console.log("加入房间,开始计时");
-            this._timeOut = setTimeout(function () {
-                _this._playGame();
-            }, ADD_ROBOT_AFTER);
-        }
+        this._startCountDown(this._matchTime, this._playGame.bind(this));
         // setTimeout(() => {
         //   if (this.players.length < MAX_ROOT_MEMBER) {
         //     // const Robot = require("./robot").Robot;
@@ -76,6 +73,23 @@ var Room = /** @class */ (function () {
         //     console.log("等待1秒没人加入，自动加入机器人");
         //   }
         // }, ADD_ROBOT_AFTER);
+    };
+    Room.prototype._startCountDown = function (time, callback) {
+        var _this = this;
+        // 游戏开始，房间不能再加入玩家
+        // console.log("匹配时间: ", time / 1000);
+        if (!this._interval) {
+            this._interval = setInterval(function () {
+                time -= 1000;
+                // console.log("匹配时间: ", time / 1000);
+                if (time <= 0) {
+                    time = 0;
+                    clearInterval(_this._interval);
+                    _this._interval = null;
+                    callback && callback();
+                }
+            }, 1000);
+        }
     };
     /** 从会话删除指定编辑客户端 */
     Room.prototype.removePlayer = function (removePlayer) {
@@ -115,31 +129,48 @@ var Room = /** @class */ (function () {
         if (isAllNull) {
             var roomIndex = globalRoomList.indexOf(this);
             if (roomIndex > -1) {
-                var delRoom = globalRoomList.splice(roomIndex, 1);
-                delRoom = null;
+                var room = globalRoomList.splice(roomIndex, 1);
+                room = null;
             }
         }
+    };
+    Room.prototype.movePlayerToLeft = function () {
+        this._players.forEach(function (p, key) {
+            var isEmpty = false;
+            if (isEmpty && !p && p.user.uindex >= 0 && p.user.uindex < 9) {
+                isEmpty = true;
+                console.log("左边的空位：", key);
+            }
+        });
+    };
+    Room.prototype.movePlayerToRight = function () {
+        this._players.forEach(function (p, key) {
+            var isEmpty = false;
+            if (isEmpty && !p && p.user.uindex >= 9) {
+                isEmpty = true;
+                console.log("右边的空位：", key);
+            }
+        });
     };
     Room.prototype.isFull = function () {
         console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + this._players.size + "/" + MAX_ROOT_MEMBER);
         return this._players.size == MAX_ROOT_MEMBER;
     };
     Room.prototype._playGame = function () {
+        var _this = this;
         console.log("游戏开始");
         this._isGaming = true;
         this._players.forEach(function (player) {
             if (player) {
-                player.gameData.totalCoin = 0;
-                player.gameData.totalScore = 0;
-                player.gameData.gameChoice = gameData_1.GameChoice.yes;
+                player.reset();
+                player.send(signal_1["default"].START, {
+                    gameTime: _this._gameTime
+                });
             }
-            player.send(signal_1["default"].START, {
-                gameTime: GAME_TIME
-            });
         });
-        // setTimeout(() => this.finishGame(), GAME_TIME);
+        this._startCountDown(this._gameTime, this._finishGame.bind(this));
     };
-    Room.prototype.finishGame = function () {
+    Room.prototype._finishGame = function () {
         console.log("游戏时间到，结束");
         return;
         // const clients = this.clients;

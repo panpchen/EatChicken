@@ -45,22 +45,23 @@ export default class TopicBar extends cc.Component {
   _onShowBigCountDownNum(isShow: boolean) {
     this.bigCountDownTimeLabel.node.active = isShow;
   }
-  startMatchTime() {
+  startMatchTime(time: number) {
     this._isMatching = true;
-    this._startCountDown(6, FontColorType.green);
+    this._startCountDown(time, FontColorType.green);
   }
 
-  startGameTime() {
+  startGameTime(time: number) {
     this._isMatching = false;
     this._onShowBigCountDownNum(false);
-    this._startCountDown(8, FontColorType.orange, () => {});
+    this._startCountDown(time, FontColorType.orange, () => {});
   }
+
   _startCountDown(
     countTime: number,
     color: FontColorType,
     callback?: Function
   ) {
-    this._countTime = countTime;
+    this._countTime = countTime / 1000;
     this.updateTime(this._countTime, color);
     this.unscheduleAllCallbacks();
     this.schedule(() => {

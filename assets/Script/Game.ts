@@ -1,7 +1,8 @@
 import BaseScene from "./BaseScene";
-import { ALLTIP, GAME_EVENT } from "./Constants";
-import { GameData, isSelfByName } from "./GameData";
+import { ALLTIP, GAME_EVENT, SERVER_EVENT } from "./Constants";
+import { GameChoice, GameData, isSelfByName } from "./GameData";
 import PlayerManager from "./PlayerManager";
+import Server from "./Server";
 import TipManager from "./TipManager";
 import TopicBar from "./TopicBar";
 import { UIManager } from "./UI/UIManager";
@@ -40,11 +41,10 @@ export default class Game extends BaseScene {
     this.unscheduleAllCallbacks();
     this.topicBar.staticLabel.active = false;
     this.topicBar.topicLabel.node.active = true;
-    this.topicBar.startGameTime();
+    this.topicBar.startGameTime(data.gameTime);
     this.topicBar.updateTopicContent("这是第1题");
     this.topicBar.showTopicTip(true, 1);
     this.footer.active = true;
-    cc.error("游戏时间: ", data.gameTime);
   }
 
   _onJoin(data) {
@@ -54,7 +54,7 @@ export default class Game extends BaseScene {
         GameData.playing = true;
         TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
         UIManager.instance.hideAll();
-        this.topicBar.startMatchTime();
+        this.topicBar.startMatchTime(data.matchTime);
       }
     }
 
@@ -88,9 +88,11 @@ export default class Game extends BaseScene {
   onClickEvent(evt, parm) {
     switch (parm) {
       case "yes":
+        Server.Instance.send(SERVER_EVENT.CORRECT, GameChoice.correct);
         cc.log("选择对的");
         break;
       case "no":
+        Server.Instance.send(SERVER_EVENT.WRONG, GameChoice.wrong);
         cc.log("选择错的");
         break;
     }

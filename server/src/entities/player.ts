@@ -8,7 +8,7 @@ export default class Player {
   private _ws: ws = null;
   public user: User = null;
   public gameData: GameData = null;
-  public room: Room = null;
+  private _room: Room = null;
   // 玩家是否在线
   private _isAlive: boolean = false;
   private _pingInterval = null;
@@ -17,11 +17,11 @@ export default class Player {
     this._ws = ws;
     this.user = null;
     this.gameData = {
-      gameChoice: GameChoice.yes,
+      gameChoice: GameChoice.correct,
       totalScore: 0,
       totalCoin: 0,
     };
-    this.room = null;
+    this._room = null;
   }
 
   connect() {
@@ -52,6 +52,14 @@ export default class Player {
         case signal.HEARTBEAT:
           this._ansHeartBeat();
           break;
+        case signal.CORRECT:
+          this._room && this._room.movePlayerToRight();
+          console.log("玩家选择对的");
+          break;
+        case signal.WRONG:
+          this._room && this._room.movePlayerToLeft();
+          console.log("玩家选择错的");
+          break;
       }
     });
 
@@ -69,9 +77,9 @@ export default class Player {
       Server.$.removeJoinPlayer(this);
       clearInterval(this._pingInterval);
       this._isAlive = false;
-      if (this.room) {
-        this.room.removePlayer(this);
-        this.room = null;
+      if (this._room) {
+        this._room.removePlayer(this);
+        this._room = null;
       }
     });
   }
@@ -97,8 +105,8 @@ export default class Player {
 
   _ansJoin(result) {
     if (Server.$.recordJoinPlayerToList(this)) {
-      this.room = Room.findRoomWithSeat() || Room.create();
-      this.room.addPlayer(this);
+      this._room = Room.findRoomWithSeat() || Room.create();
+      this._room.addPlayer(this);
     } else {
       this.send(signal.JOIN_FAILED);
     }
@@ -130,6 +138,12 @@ export default class Player {
     } catch (err) {
       console.error("服务端发送错误: ", err);
     }
+  }
+
+  reset() {
+    this.gameData.totalCoin = 0;
+    this.gameData.totalScore = 0;
+    this.gameData.gameChoice = GameChoice.correct;
   }
 
   closeSocket() {

@@ -9,18 +9,18 @@ var Player = /** @class */ (function () {
         this._ws = null;
         this.user = null;
         this.gameData = null;
-        this.room = null;
+        this._room = null;
         // 玩家是否在线
         this._isAlive = false;
         this._pingInterval = null;
         this._ws = ws;
         this.user = null;
         this.gameData = {
-            gameChoice: gameData_1.GameChoice.yes,
+            gameChoice: gameData_1.GameChoice.correct,
             totalScore: 0,
             totalCoin: 0
         };
-        this.room = null;
+        this._room = null;
     }
     Player.prototype.connect = function () {
         var _this = this;
@@ -47,6 +47,14 @@ var Player = /** @class */ (function () {
                 case signal_1["default"].HEARTBEAT:
                     _this._ansHeartBeat();
                     break;
+                case signal_1["default"].CORRECT:
+                    _this._room && _this._room.movePlayerToRight();
+                    console.log("玩家选择对的");
+                    break;
+                case signal_1["default"].WRONG:
+                    _this._room && _this._room.movePlayerToLeft();
+                    console.log("玩家选择错的");
+                    break;
             }
         });
         this._ws.on("error", function (msg) {
@@ -62,9 +70,9 @@ var Player = /** @class */ (function () {
             server_1["default"].$.removeJoinPlayer(_this);
             clearInterval(_this._pingInterval);
             _this._isAlive = false;
-            if (_this.room) {
-                _this.room.removePlayer(_this);
-                _this.room = null;
+            if (_this._room) {
+                _this._room.removePlayer(_this);
+                _this._room = null;
             }
         });
     };
@@ -87,8 +95,8 @@ var Player = /** @class */ (function () {
     };
     Player.prototype._ansJoin = function (result) {
         if (server_1["default"].$.recordJoinPlayerToList(this)) {
-            this.room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
-            this.room.addPlayer(this);
+            this._room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
+            this._room.addPlayer(this);
         }
         else {
             this.send(signal_1["default"].JOIN_FAILED);
@@ -110,6 +118,11 @@ var Player = /** @class */ (function () {
         catch (err) {
             console.error("服务端发送错误: ", err);
         }
+    };
+    Player.prototype.reset = function () {
+        this.gameData.totalCoin = 0;
+        this.gameData.totalScore = 0;
+        this.gameData.gameChoice = gameData_1.GameChoice.correct;
     };
     Player.prototype.closeSocket = function () {
         this._ws.close();
