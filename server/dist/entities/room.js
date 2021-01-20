@@ -101,7 +101,7 @@ var Room = /** @class */ (function () {
         console.log("离开的玩家", removePlayer.user.uname);
         // 不包含离开的玩家
         var allPlayers = Object.values(this._players).filter(function (p) {
-            return p !== null && p.user.uname !== removePlayer.user.uname;
+            return p && p.user.uname !== removePlayer.user.uname;
         });
         var list = [];
         allPlayers.forEach(function (p) {
@@ -116,7 +116,8 @@ var Room = /** @class */ (function () {
             });
         });
         for (var key in this._players) {
-            if (this._players[key].user.uname === removePlayer.user.uname) {
+            var p = this._players[key];
+            if (p && p.user.uname === removePlayer.user.uname) {
                 this._players[key] = null;
                 removePlayer = null;
                 break;

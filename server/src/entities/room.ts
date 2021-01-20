@@ -115,7 +115,7 @@ export class Room {
 
     // 不包含离开的玩家
     const allPlayers = Object.values<Player>(this._players).filter((p) => {
-      return p !== null && p.user.uname !== removePlayer.user.uname;
+      return p && p.user.uname !== removePlayer.user.uname;
     });
 
     const list = [];
@@ -133,7 +133,8 @@ export class Room {
     });
 
     for (let key in this._players) {
-      if (this._players[key].user.uname === removePlayer.user.uname) {
+      const p = this._players[key] as Player;
+      if (p && p.user.uname === removePlayer.user.uname) {
         this._players[key] = null;
         removePlayer = null;
         break;
