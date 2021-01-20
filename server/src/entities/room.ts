@@ -18,7 +18,7 @@ let nextRoomId = 0;
 export class Room {
   public readonly id = `room${nextRoomId++}`;
   // 当前房间所有玩家
-  private readonly _players: Map<number, Player>;
+  private readonly _players = null;
 
   //  座位号
   private _index: number = -1;
@@ -28,7 +28,10 @@ export class Room {
   private _interval = null;
 
   private constructor() {
-    this._players = new Map();
+    this._players = {};
+    for (let i = 0; i < 18; i++) {
+      this._players[i] = null;
+    }
   }
 
   public isGaming() {
@@ -39,29 +42,29 @@ export class Room {
     // 有重复加入的不执行, 对于已经加入的玩家不会再创建一次
     console.log(`玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
 
-    if (this._players.size === 0) {
+    if (this._index == -1) {
       this._index++;
-      this._players.set(this._index, player);
+      this._players[this._index] = player;
       player.user.uindex = this._index;
     } else {
       let haveEmpty = false;
-      this._players.forEach((p, key) => {
-        // 寻找空位
-        if (!haveEmpty && p === null) {
-          this._players.set(key, player);
-          player.user.uindex = key;
+      for (let key in this._players) {
+        if (this._players[key] === null) {
+          this._players[key] = player;
+          player.user.uindex = Number(key);
           haveEmpty = true;
+          break;
         }
-      });
+      }
 
       if (!haveEmpty) {
         this._index++;
-        this._players.set(this._index, player);
+        this._players[this._index] = player;
         player.user.uindex = this._index;
       }
     }
 
-    const allPlayers = Array.from(this._players.values()).filter((p) => {
+    const allPlayers = Object.values<Player>(this._players).filter((p) => {
       return p !== null;
     });
 
@@ -71,7 +74,7 @@ export class Room {
     });
 
     allPlayers.forEach((p) => {
-      p.send(signal.JOIN, {
+      p.send(signal.JOIN_SUCCESS, {
         playerList: list,
         joinPlayer: p.user,
         matchTime: this._matchTime,
@@ -111,7 +114,7 @@ export class Room {
     console.log("离开的玩家", removePlayer.user.uname);
 
     // 不包含离开的玩家
-    const allPlayers = Array.from(this._players.values()).filter((p) => {
+    const allPlayers = Object.values<Player>(this._players).filter((p) => {
       return p !== null && p.user.uname !== removePlayer.user.uname;
     });
 
@@ -129,22 +132,23 @@ export class Room {
       });
     });
 
-    this._players.forEach((p, key) => {
-      if (p && removePlayer) {
-        if (p.user.uname === removePlayer.user.uname) {
-          this._players.set(key, null);
-          removePlayer = null;
-        }
+    for (let key in this._players) {
+      if (this._players[key].user.uname === removePlayer.user.uname) {
+        this._players[key] = null;
+        removePlayer = null;
+        break;
       }
-    });
+    }
 
     // 如果房间只剩一个人，此人离开则房间解散
     let isAllNull = true;
-    this._players.forEach((p) => {
-      if (p) {
+    for (let key in this._players) {
+      if (this._players[key]) {
         isAllNull = false;
+        break;
       }
-    });
+    }
+
     if (isAllNull) {
       const roomIndex = globalRoomList.indexOf(this);
       if (roomIndex > -1) {
@@ -154,42 +158,43 @@ export class Room {
     }
   }
 
-  public movePlayerToLeft() {
-    this._players.forEach((p, key) => {
-      let isEmpty = false;
-      if (isEmpty && !p && p.user.uindex >= 0 && p.user.uindex < 9) {
-        isEmpty = true;
-        console.log("左边的空位：", key);
+  public movePlayerToLeft(data) {
+    for (let key in this._players) {
+      if (!this._players[key] && Number(key) >= 0 && Number(key) < 9) {
+        console.log("左边的空位：", key, "信息：", data);
+        break;
       }
-    });
+    }
   }
 
-  public movePlayerToRight() {
-    this._players.forEach((p, key) => {
-      let isEmpty = false;
-      if (isEmpty && !p && p.user.uindex >= 9) {
-        isEmpty = true;
-        console.log("右边的空位：", key);
+  public movePlayerToRight(data) {
+    for (let key in this._players) {
+      if (!this._players[key] && Number(key) >= 9) {
+        console.log("右边的空位：", key, "信息：", data);
+        break;
       }
-    });
+    }
   }
 
   public isFull() {
-    console.log(`当前房间人数: ${this._players.size}/${MAX_ROOT_MEMBER}`);
-    return this._players.size == MAX_ROOT_MEMBER;
+    console.log(
+      `当前房间人数: ${Object.values(this._players).length}/${MAX_ROOT_MEMBER}`
+    );
+    return Object.values(this._players).length == MAX_ROOT_MEMBER;
   }
 
   private _playGame() {
     console.log("游戏开始");
     this._isGaming = true;
-    this._players.forEach((player) => {
-      if (player) {
-        player.reset();
-        player.send(signal.START, {
+    for (let key in this._players) {
+      const p = this._players[key] as Player;
+      if (p) {
+        p.reset();
+        p.send(signal.START, {
           gameTime: this._gameTime,
         });
       }
-    });
+    }
     this._startCountDown(this._gameTime, this._finishGame.bind(this));
   }
 

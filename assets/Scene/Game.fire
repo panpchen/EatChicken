@@ -201,7 +201,7 @@
       "array": [
         0,
         0,
-        392.3031557526293,
+        389.7051216085722,
         0,
         0,
         0,
@@ -299,7 +299,7 @@
       "array": [
         0,
         0,
-        392.3031557526293,
+        389.7051216085722,
         0,
         0,
         0,
@@ -942,7 +942,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "yesBtn",
+    "_name": "correctBtn",
     "_objFlags": 0,
     "_parent": {
       "__id__": 17
@@ -1191,7 +1191,7 @@
     "component": "",
     "_componentId": "e1b90/rohdEk4SdmmEZANaD",
     "handler": "onClickEvent",
-    "customEventData": "yes"
+    "customEventData": "correct"
   },
   {
     "__type__": "cc.Widget",
@@ -1222,7 +1222,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "noBtn",
+    "_name": "wrongBtn",
     "_objFlags": 0,
     "_parent": {
       "__id__": 17
@@ -1471,7 +1471,7 @@
     "component": "",
     "_componentId": "e1b90/rohdEk4SdmmEZANaD",
     "handler": "onClickEvent",
-    "customEventData": "no"
+    "customEventData": "wrong"
   },
   {
     "__type__": "cc.Widget",

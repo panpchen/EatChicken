@@ -1,6 +1,6 @@
 import BaseScene from "./BaseScene";
 import { ALLTIP, GAME_EVENT, SERVER_EVENT } from "./Constants";
-import { GameChoice, GameData, isSelfByName } from "./GameData";
+import { GameChoice, GameData, isSelfByName, PlayerData } from "./GameData";
 import PlayerManager from "./PlayerManager";
 import Server from "./Server";
 import TipManager from "./TipManager";
@@ -22,8 +22,8 @@ export default class Game extends BaseScene {
 
   onLoad() {
     super.onLoad();
-    cc.director.on(GAME_EVENT.GAME_JOIN, this._onJoin, this);
-    cc.director.on(GAME_EVENT.GAME_FAILED, this._onJoinFailed, this);
+    cc.director.on(GAME_EVENT.GAME_JOINSUCCESS, this._onJoin, this);
+    cc.director.on(GAME_EVENT.GAME_JOINFAILED, this._onJoinFailed, this);
     cc.director.on(GAME_EVENT.GAME_START, this._onGameStart, this);
     cc.director.on(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
     this.footer.active = false;
@@ -31,9 +31,9 @@ export default class Game extends BaseScene {
   }
 
   onDestroy() {
-    cc.director.off(GAME_EVENT.GAME_JOIN, this._onJoin, this);
+    cc.director.off(GAME_EVENT.GAME_JOINSUCCESS, this._onJoin, this);
     cc.director.off(GAME_EVENT.GAME_START, this._onGameStart, this);
-    cc.director.off(GAME_EVENT.GAME_FAILED, this._onJoinFailed, this);
+    cc.director.off(GAME_EVENT.GAME_JOINFAILED, this._onJoinFailed, this);
     cc.director.off(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
   }
 
@@ -87,12 +87,18 @@ export default class Game extends BaseScene {
 
   onClickEvent(evt, parm) {
     switch (parm) {
-      case "yes":
-        Server.Instance.send(SERVER_EVENT.CORRECT, GameChoice.correct);
+      case "correct":
+        Server.Instance.send(SERVER_EVENT.CHOICE, {
+          choice: GameChoice.correct,
+          uname: PlayerData.uname,
+        });
         cc.log("选择对的");
         break;
-      case "no":
-        Server.Instance.send(SERVER_EVENT.WRONG, GameChoice.wrong);
+      case "wrong":
+        Server.Instance.send(SERVER_EVENT.CHOICE, {
+          choice: GameChoice.wrong,
+          uname: PlayerData.uname,
+        });
         cc.log("选择错的");
         break;
     }

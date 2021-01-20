@@ -68,9 +68,6 @@ export default class Server extends cc.Component {
           cc.director.loadScene("Game");
         }, 0.7);
         break;
-      case SERVER_EVENT.JOIN:
-        cc.director.emit(GAME_EVENT.GAME_JOIN, result.data);
-        break;
       case SERVER_EVENT.START:
         cc.director.emit(GAME_EVENT.GAME_START, result.data);
         break;
@@ -81,6 +78,9 @@ export default class Server extends cc.Component {
       case SERVER_EVENT.HEARTBEAT:
         this._startHeartBeat();
         break;
+      case SERVER_EVENT.JOIN_SUCCESS:
+        cc.director.emit(GAME_EVENT.GAME_JOINSUCCESS, result.data);
+        break;
       case SERVER_EVENT.LOGIN_FAILED:
         TipManager.Instance.showTips(ALLTIP.LOGIN_FAILED);
         this.scheduleOnce(() => {
@@ -89,7 +89,7 @@ export default class Server extends cc.Component {
         break;
       case SERVER_EVENT.JOIN_FAILED:
         TipManager.Instance.showTips(ALLTIP.INGAME);
-        cc.director.emit(GAME_EVENT.GAME_FAILED);
+        cc.director.emit(GAME_EVENT.GAME_JOINFAILED);
         break;
     }
   }

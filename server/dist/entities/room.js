@@ -14,13 +14,18 @@ var nextRoomId = 0;
 var Room = /** @class */ (function () {
     function Room() {
         this.id = "room" + nextRoomId++;
+        // 当前房间所有玩家
+        this._players = null;
         //  座位号
         this._index = -1;
         this._matchTime = ADD_ROBOT_AFTER;
         this._gameTime = GAME_TIME;
         this._isGaming = false;
         this._interval = null;
-        this._players = new Map();
+        this._players = {};
+        for (var i = 0; i < 18; i++) {
+            this._players[i] = null;
+        }
     }
     Room.prototype.isGaming = function () {
         return this._isGaming;
@@ -30,28 +35,28 @@ var Room = /** @class */ (function () {
         var _this = this;
         // 有重复加入的不执行, 对于已经加入的玩家不会再创建一次
         console.log("\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
-        if (this._players.size === 0) {
+        if (this._index == -1) {
             this._index++;
-            this._players.set(this._index, player);
+            this._players[this._index] = player;
             player.user.uindex = this._index;
         }
         else {
-            var haveEmpty_1 = false;
-            this._players.forEach(function (p, key) {
-                // 寻找空位
-                if (!haveEmpty_1 && p === null) {
-                    _this._players.set(key, player);
-                    player.user.uindex = key;
-                    haveEmpty_1 = true;
+            var haveEmpty = false;
+            for (var key in this._players) {
+                if (this._players[key] === null) {
+                    this._players[key] = player;
+                    player.user.uindex = Number(key);
+                    haveEmpty = true;
+                    break;
                 }
-            });
-            if (!haveEmpty_1) {
+            }
+            if (!haveEmpty) {
                 this._index++;
-                this._players.set(this._index, player);
+                this._players[this._index] = player;
                 player.user.uindex = this._index;
             }
         }
-        var allPlayers = Array.from(this._players.values()).filter(function (p) {
+        var allPlayers = Object.values(this._players).filter(function (p) {
             return p !== null;
         });
         var list = [];
@@ -59,7 +64,7 @@ var Room = /** @class */ (function () {
             list.push(p.user);
         });
         allPlayers.forEach(function (p) {
-            p.send(signal_1["default"].JOIN, {
+            p.send(signal_1["default"].JOIN_SUCCESS, {
                 playerList: list,
                 joinPlayer: p.user,
                 matchTime: _this._matchTime
@@ -93,10 +98,9 @@ var Room = /** @class */ (function () {
     };
     /** 从会话删除指定编辑客户端 */
     Room.prototype.removePlayer = function (removePlayer) {
-        var _this = this;
         console.log("离开的玩家", removePlayer.user.uname);
         // 不包含离开的玩家
-        var allPlayers = Array.from(this._players.values()).filter(function (p) {
+        var allPlayers = Object.values(this._players).filter(function (p) {
             return p !== null && p.user.uname !== removePlayer.user.uname;
         });
         var list = [];
@@ -111,21 +115,21 @@ var Room = /** @class */ (function () {
                 player: removePlayer.user
             });
         });
-        this._players.forEach(function (p, key) {
-            if (p && removePlayer) {
-                if (p.user.uname === removePlayer.user.uname) {
-                    _this._players.set(key, null);
-                    removePlayer = null;
-                }
+        for (var key in this._players) {
+            if (this._players[key].user.uname === removePlayer.user.uname) {
+                this._players[key] = null;
+                removePlayer = null;
+                break;
             }
-        });
+        }
         // 如果房间只剩一个人，此人离开则房间解散
         var isAllNull = true;
-        this._players.forEach(function (p) {
-            if (p) {
+        for (var key in this._players) {
+            if (this._players[key]) {
                 isAllNull = false;
+                break;
             }
-        });
+        }
         if (isAllNull) {
             var roomIndex = globalRoomList.indexOf(this);
             if (roomIndex > -1) {
@@ -134,40 +138,38 @@ var Room = /** @class */ (function () {
             }
         }
     };
-    Room.prototype.movePlayerToLeft = function () {
-        this._players.forEach(function (p, key) {
-            var isEmpty = false;
-            if (isEmpty && !p && p.user.uindex >= 0 && p.user.uindex < 9) {
-                isEmpty = true;
-                console.log("左边的空位：", key);
+    Room.prototype.movePlayerToLeft = function (data) {
+        for (var key in this._players) {
+            if (!this._players[key] && Number(key) >= 0 && Number(key) < 9) {
+                console.log("左边的空位：", key, "信息：", data);
+                break;
             }
-        });
+        }
     };
-    Room.prototype.movePlayerToRight = function () {
-        this._players.forEach(function (p, key) {
-            var isEmpty = false;
-            if (isEmpty && !p && p.user.uindex >= 9) {
-                isEmpty = true;
-                console.log("右边的空位：", key);
+    Room.prototype.movePlayerToRight = function (data) {
+        for (var key in this._players) {
+            if (!this._players[key] && Number(key) >= 9) {
+                console.log("右边的空位：", key, "信息：", data);
+                break;
             }
-        });
+        }
     };
     Room.prototype.isFull = function () {
-        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + this._players.size + "/" + MAX_ROOT_MEMBER);
-        return this._players.size == MAX_ROOT_MEMBER;
+        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + Object.values(this._players).length + "/" + MAX_ROOT_MEMBER);
+        return Object.values(this._players).length == MAX_ROOT_MEMBER;
     };
     Room.prototype._playGame = function () {
-        var _this = this;
         console.log("游戏开始");
         this._isGaming = true;
-        this._players.forEach(function (player) {
-            if (player) {
-                player.reset();
-                player.send(signal_1["default"].START, {
-                    gameTime: _this._gameTime
+        for (var key in this._players) {
+            var p = this._players[key];
+            if (p) {
+                p.reset();
+                p.send(signal_1["default"].START, {
+                    gameTime: this._gameTime
                 });
             }
-        });
+        }
         this._startCountDown(this._gameTime, this._finishGame.bind(this));
     };
     Room.prototype._finishGame = function () {

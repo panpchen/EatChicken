@@ -52,13 +52,17 @@ export default class Player {
         case signal.HEARTBEAT:
           this._ansHeartBeat();
           break;
-        case signal.CORRECT:
-          this._room && this._room.movePlayerToRight();
-          console.log("玩家选择对的");
-          break;
-        case signal.WRONG:
-          this._room && this._room.movePlayerToLeft();
-          console.log("玩家选择错的");
+        case signal.CHOICE:
+          switch (result.data.choice) {
+            case GameChoice.correct:
+              this._room && this._room.movePlayerToLeft(result.data);
+              console.log("玩家选择对的");
+              break;
+            case GameChoice.wrong:
+              this._room && this._room.movePlayerToRight(result.data);
+              console.log("玩家选择对的");
+              break;
+          }
           break;
       }
     });

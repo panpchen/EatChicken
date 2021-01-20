@@ -47,13 +47,17 @@ var Player = /** @class */ (function () {
                 case signal_1["default"].HEARTBEAT:
                     _this._ansHeartBeat();
                     break;
-                case signal_1["default"].CORRECT:
-                    _this._room && _this._room.movePlayerToRight();
-                    console.log("玩家选择对的");
-                    break;
-                case signal_1["default"].WRONG:
-                    _this._room && _this._room.movePlayerToLeft();
-                    console.log("玩家选择错的");
+                case signal_1["default"].CHOICE:
+                    switch (result.data.choice) {
+                        case gameData_1.GameChoice.correct:
+                            _this._room && _this._room.movePlayerToLeft(result.data);
+                            console.log("玩家选择对的");
+                            break;
+                        case gameData_1.GameChoice.wrong:
+                            _this._room && _this._room.movePlayerToRight(result.data);
+                            console.log("玩家选择对的");
+                            break;
+                    }
                     break;
             }
         });
