@@ -4,6 +4,7 @@ export interface IPlayer {
   uindex: number;
 }
 
+// 玩家自己信息
 export const PlayerData: IPlayer = {
   uid: "",
   uname: "",

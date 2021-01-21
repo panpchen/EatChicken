@@ -50,12 +50,13 @@ var Player = /** @class */ (function () {
                 case signal_1["default"].CHOICE:
                     switch (result.data.choice) {
                         case gameData_1.GameChoice.correct:
-                            _this._room && _this._room.movePlayerToLeft(result.data);
+                            _this._room && _this._room.movePlayerToLeft(result.data.playerName);
                             console.log("玩家选择对的");
                             break;
                         case gameData_1.GameChoice.wrong:
-                            _this._room && _this._room.movePlayerToRight(result.data);
-                            console.log("玩家选择对的");
+                            _this._room &&
+                                _this._room.movePlayerToRight(result.data.playerName);
+                            console.log("玩家选择错的");
                             break;
                     }
                     break;

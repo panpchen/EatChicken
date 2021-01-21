@@ -29,19 +29,44 @@ export default class PlayerManager extends cc.Component {
     for (let i = 0, len = players.length; i < len; i++) {
       const player = cc.instantiate(this.prefab).getComponent(Player);
       const pData: IPlayer = players[i];
+      if (isSelfByName(pData.uname)) {
+        PlayerData.uindex = pData.uindex;
+      }
       player.init(pData);
       player.node.parent = this.node;
       this._allPlayers.push(player);
       player.node.setSiblingIndex(0);
       player.node.setPosition(cc.v2(-400, 640));
       cc.tween(player.node)
-        .to(1, { position: this._getPosByKey(pData.uindex) })
+        .to(1, { position: this._getPosByIndex(pData.uindex) })
         .start();
     }
   }
 
+  movePlayerToPosByIndex(data) {
+    const player = this._getPlayerByName(data.playerName);
+    const pos = this._getPosByIndex(data.targetIndex);
+    cc.error(data);
+    if (player) {
+      cc.tween(player.node)
+        .to(0.5, {
+          position: pos,
+        })
+        .start();
+    }
+  }
+
+  _getPlayerByName(name: string) {
+    for (let i = 0, len = this._allPlayers.length; i < len; i++) {
+      if (this._allPlayers[i].getData().uname === name) {
+        return this._allPlayers[i];
+      }
+    }
+    return null;
+  }
+
   // 通过key获取对应坐标 L1,L2,R1,R2
-  _getPosByKey(index: number) {
+  _getPosByIndex(index: number) {
     const wrapNum = 9;
     let newPos = cc.Vec3.ZERO;
     if (index < wrapNum) {

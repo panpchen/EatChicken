@@ -55,12 +55,13 @@ export default class Player {
         case signal.CHOICE:
           switch (result.data.choice) {
             case GameChoice.correct:
-              this._room && this._room.movePlayerToLeft(result.data);
+              this._room && this._room.movePlayerToLeft(result.data.playerName);
               console.log("玩家选择对的");
               break;
             case GameChoice.wrong:
-              this._room && this._room.movePlayerToRight(result.data);
-              console.log("玩家选择对的");
+              this._room &&
+                this._room.movePlayerToRight(result.data.playerName);
+              console.log("玩家选择错的");
               break;
           }
           break;

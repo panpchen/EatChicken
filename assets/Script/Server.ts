@@ -12,6 +12,7 @@ import {
   ServerURl,
   SERVER_EVENT,
 } from "./Constants";
+import { GameData } from "./GameData";
 import TipManager from "./TipManager";
 
 const { ccclass, property } = cc._decorator;
@@ -90,6 +91,9 @@ export default class Server extends cc.Component {
       case SERVER_EVENT.JOIN_FAILED:
         TipManager.Instance.showTips(ALLTIP.INGAME);
         cc.director.emit(GAME_EVENT.GAME_JOINFAILED);
+        break;
+      case SERVER_EVENT.MOVEMENT:
+        cc.director.emit(GAME_EVENT.GAME_MOVEMENT, result.data);
         break;
     }
   }

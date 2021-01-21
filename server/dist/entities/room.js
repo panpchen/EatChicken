@@ -34,7 +34,7 @@ var Room = /** @class */ (function () {
     Room.prototype.addPlayer = function (player) {
         var _this = this;
         // 有重复加入的不执行, 对于已经加入的玩家不会再创建一次
-        console.log("\u73A9\u5BB6: " + player.user.uname + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
+        console.log("\u73A9\u5BB6: " + player.user + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
         if (this._index == -1) {
             this._index++;
             this._players[this._index] = player;
@@ -139,24 +139,65 @@ var Room = /** @class */ (function () {
             }
         }
     };
-    Room.prototype.movePlayerToLeft = function (data) {
+    Room.prototype.movePlayerToLeft = function (playerName) {
+        var targetIndex = -1;
         for (var key in this._players) {
-            if (!this._players[key] && Number(key) >= 0 && Number(key) < 9) {
-                console.log("左边的空位：", key, "信息：", data);
+            var k = Number(key);
+            if (!this._players[key] && k >= 0 && k < 9) {
+                targetIndex = k;
+                this._setPlayerIndex(playerName, targetIndex);
+                console.log("左边的空位：", k, "信息：", playerName);
                 break;
+            }
+        }
+        for (var key in this._players) {
+            var p = this._players[key];
+            if (p) {
+                console.log("到左", p.user.uname);
+                p.send(signal_1["default"].MOVEMENT, { targetIndex: targetIndex, playerName: playerName });
             }
         }
     };
-    Room.prototype.movePlayerToRight = function (data) {
+    Room.prototype.movePlayerToRight = function (playerName) {
+        var targetIndex = -1;
         for (var key in this._players) {
-            if (!this._players[key] && Number(key) >= 9) {
-                console.log("右边的空位：", key, "信息：", data);
+            var k = Number(key);
+            if (!this._players[key] && k >= 9) {
+                targetIndex = k;
+                this._setPlayerIndex(playerName, targetIndex);
+                console.log("右边的空位：", k, "信息：", playerName);
                 break;
             }
         }
+        for (var key in this._players) {
+            var p = this._players[key];
+            if (p) {
+                console.log("到右", p.user.uname);
+                p.send(signal_1["default"].MOVEMENT, { targetIndex: targetIndex, playerName: playerName });
+            }
+        }
+    };
+    Room.prototype._setPlayerIndex = function (playerName, tarIndex) {
+        var p = this._getPlayerByName(playerName);
+        if (p) {
+            this._players[p.user.uindex] = null;
+            p.user.uindex = tarIndex;
+            this._players[tarIndex] = p;
+        }
+    };
+    Room.prototype._getPlayerByName = function (name) {
+        for (var key in this._players) {
+            var p = this._players[key];
+            if (p && p.user.uname === name) {
+                return p;
+            }
+        }
+        return null;
     };
     Room.prototype.isFull = function () {
-        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + Object.values(this._players).length + "/" + MAX_ROOT_MEMBER);
+        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + Object.values(this._players).filter(function (p) {
+            return p !== null;
+        }).length + "/" + MAX_ROOT_MEMBER);
         return Object.values(this._players).length == MAX_ROOT_MEMBER;
     };
     Room.prototype._playGame = function () {

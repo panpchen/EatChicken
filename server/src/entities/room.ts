@@ -40,7 +40,7 @@ export class Room {
   /** 添加编辑客户端到会话 */
   public addPlayer(player: Player) {
     // 有重复加入的不执行, 对于已经加入的玩家不会再创建一次
-    console.log(`玩家: ${player.user.uname} | 进入房间号: ${this.id}`);
+    console.log(`玩家: ${player.user} | 进入房间号: ${this.id}`);
 
     if (this._index == -1) {
       this._index++;
@@ -159,27 +159,73 @@ export class Room {
     }
   }
 
-  public movePlayerToLeft(data) {
+  public movePlayerToLeft(playerName: string) {
+    let targetIndex = -1;
     for (let key in this._players) {
-      if (!this._players[key] && Number(key) >= 0 && Number(key) < 9) {
-        console.log("左边的空位：", key, "信息：", data);
+      let k = Number(key);
+      if (!this._players[key] && k >= 0 && k < 9) {
+        targetIndex = k;
+        this._setPlayerIndex(playerName, targetIndex);
+        console.log("左边的空位：", k, "信息：", playerName);
         break;
+      }
+    }
+
+    for (let key in this._players) {
+      const p = this._players[key];
+      if (p) {
+        console.log("到左", p.user.uname);
+        p.send(signal.MOVEMENT, { targetIndex, playerName });
       }
     }
   }
 
-  public movePlayerToRight(data) {
+  public movePlayerToRight(playerName: string) {
+    let targetIndex = -1;
     for (let key in this._players) {
-      if (!this._players[key] && Number(key) >= 9) {
-        console.log("右边的空位：", key, "信息：", data);
+      let k = Number(key);
+      if (!this._players[key] && k >= 9) {
+        targetIndex = k;
+        this._setPlayerIndex(playerName, targetIndex);
+        console.log("右边的空位：", k, "信息：", playerName);
         break;
+      }
+    }
+
+    for (let key in this._players) {
+      const p = this._players[key];
+      if (p) {
+        console.log("到右", p.user.uname);
+        p.send(signal.MOVEMENT, { targetIndex, playerName });
       }
     }
   }
 
+  _setPlayerIndex(playerName: string, tarIndex: number) {
+    const p = this._getPlayerByName(playerName);
+    if (p) {
+      this._players[p.user.uindex] = null;
+      p.user.uindex = tarIndex;
+      this._players[tarIndex] = p;
+    }
+  }
+
+  _getPlayerByName(name: string) {
+    for (let key in this._players) {
+      let p = this._players[key] as Player;
+      if (p && p.user.uname === name) {
+        return p;
+      }
+    }
+    return null;
+  }
   public isFull() {
     console.log(
-      `当前房间人数: ${Object.values(this._players).length}/${MAX_ROOT_MEMBER}`
+      `当前房间人数: ${
+        Object.values<Player>(this._players).filter((p) => {
+          return p !== null;
+        }).length
+      }/${MAX_ROOT_MEMBER}`
     );
     return Object.values(this._players).length == MAX_ROOT_MEMBER;
   }

@@ -201,7 +201,7 @@
       "array": [
         0,
         0,
-        389.7051216085722,
+        387.97938089542856,
         0,
         0,
         0,
@@ -299,7 +299,7 @@
       "array": [
         0,
         0,
-        389.7051216085722,
+        387.97938089542856,
         0,
         0,
         0,
@@ -792,7 +792,7 @@
         "__id__": 26
       }
     ],
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 32
@@ -1177,7 +1177,9 @@
     },
     "_N$hoverSprite": null,
     "hoverSprite": null,
-    "_N$disabledSprite": null,
+    "_N$disabledSprite": {
+      "__uuid__": "a35d8b31-9af4-4916-9107-bd396b15fbba"
+    },
     "_N$target": {
       "__id__": 21
     },
@@ -1457,7 +1459,9 @@
     },
     "_N$hoverSprite": null,
     "hoverSprite": null,
-    "_N$disabledSprite": null,
+    "_N$disabledSprite": {
+      "__uuid__": "42b124e9-2f4d-4ece-abe8-ab3f18fb0241"
+    },
     "_N$target": {
       "__id__": 27
     },

@@ -9,6 +9,7 @@ exports["default"] = {
     START: "START",
     LEAVE: "LEAVE",
     CHOICE: "CHOICE",
+    MOVEMENT: "MOVEMENT",
     VALIDATE: "VALIDATE",
     RESULT: "RESULT",
     LOGIN_FAILED: "LOGIN_FAILED",
