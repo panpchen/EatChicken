@@ -43,14 +43,16 @@ export default class PlayerManager extends cc.Component {
     }
   }
 
-  movePlayerToPosByIndex(data) {
+  movePlayerToPosByIndex(data, callback?: Function) {
     const player = this._getPlayerByName(data.playerName);
     const pos = this._getPosByIndex(data.targetIndex);
-    cc.error(data);
     if (player) {
       cc.tween(player.node)
-        .to(0.5, {
+        .to(0.3, {
           position: pos,
+        })
+        .call(() => {
+          callback && callback();
         })
         .start();
     }

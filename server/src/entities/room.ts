@@ -174,7 +174,6 @@ export class Room {
     for (let key in this._players) {
       const p = this._players[key];
       if (p) {
-        console.log("到左", p.user.uname);
         p.send(signal.MOVEMENT, { targetIndex, playerName });
       }
     }
@@ -195,7 +194,6 @@ export class Room {
     for (let key in this._players) {
       const p = this._players[key];
       if (p) {
-        console.log("到右", p.user.uname);
         p.send(signal.MOVEMENT, { targetIndex, playerName });
       }
     }

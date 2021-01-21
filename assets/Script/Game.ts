@@ -25,6 +25,10 @@ export default class Game extends BaseScene {
   topicBar: TopicBar = null;
   @property(PlayerManager)
   playerManager: PlayerManager = null;
+  @property(cc.Node)
+  selectPic: cc.Node = null;
+
+  private _canChoose: boolean = true;
 
   onLoad() {
     super.onLoad();
@@ -39,6 +43,7 @@ export default class Game extends BaseScene {
       this
     );
     this.footer.active = false;
+    this.selectPic.opacity = 0;
     this.topicBar.init();
   }
 
@@ -86,8 +91,9 @@ export default class Game extends BaseScene {
   }
 
   _onMovement(data) {
-    this.playerManager.movePlayerToPosByIndex(data);
-    cc.error("选择信息： ", data);
+    this.playerManager.movePlayerToPosByIndex(data, () => {
+      this._canChoose = true;
+    });
   }
   _onLeave(data) {
     GameData.playing = false;
@@ -109,27 +115,47 @@ export default class Game extends BaseScene {
   }
 
   onClickEvent(evt, parm) {
-    cc.error("选择的玩家： ", PlayerData);
+    if (!this._canChoose) {
+      return;
+    }
+    this._canChoose = false;
+
     switch (parm) {
       case "correct":
         this._changeSelectBtnStatus(parm);
+        this._showSelectPic(-190);
         Server.Instance.send(SERVER_EVENT.CHOICE, {
           choice: GameChoice.correct,
           playerName: PlayerData.uname,
         });
-        cc.log("选择对的");
         break;
       case "wrong":
         this._changeSelectBtnStatus(parm);
+        this._showSelectPic(200);
         Server.Instance.send(SERVER_EVENT.CHOICE, {
           choice: GameChoice.wrong,
           playerName: PlayerData.uname,
         });
-        cc.log("选择错的");
         break;
     }
   }
 
+  _showSelectPic(posX: number) {
+    this.selectPic.x = posX;
+
+    const widget = this.selectPic.getComponent(cc.Widget);
+    widget.isAlignLeft = false;
+    widget.isAlignLeft = true;
+    widget.isAlignRight = false;
+    widget.isAlignRight = true;
+
+    this.selectPic.opacity = 0;
+    cc.tween(this.selectPic)
+      .to(0.1, { opacity: 255 })
+      .delay(0.05)
+      .to(0.1, { opacity: 0 })
+      .start();
+  }
   _changeSelectBtnStatus(parm: string) {
     const correctBtn = this.footer
       .getChildByName("correctBtn")
@@ -143,5 +169,6 @@ export default class Game extends BaseScene {
   }
   _onLostConnection() {
     GameData.playing = false;
+    this._canChoose = true;
   }
 }

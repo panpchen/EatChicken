@@ -153,7 +153,6 @@ var Room = /** @class */ (function () {
         for (var key in this._players) {
             var p = this._players[key];
             if (p) {
-                console.log("到左", p.user.uname);
                 p.send(signal_1["default"].MOVEMENT, { targetIndex: targetIndex, playerName: playerName });
             }
         }
@@ -172,7 +171,6 @@ var Room = /** @class */ (function () {
         for (var key in this._players) {
             var p = this._players[key];
             if (p) {
-                console.log("到右", p.user.uname);
                 p.send(signal_1["default"].MOVEMENT, { targetIndex: targetIndex, playerName: playerName });
             }
         }
