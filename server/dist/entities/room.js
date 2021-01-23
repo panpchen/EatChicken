@@ -88,10 +88,9 @@ var Room = /** @class */ (function () {
                 time -= 1000;
                 // console.log("匹配时间: ", time / 1000);
                 if (time <= 0) {
-                    time = 0;
+                    callback && callback();
                     clearInterval(_this._interval);
                     _this._interval = null;
-                    callback && callback();
                 }
             }, 1000);
         }

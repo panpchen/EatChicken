@@ -1,5 +1,5 @@
 import BaseScene from "./BaseScene";
-import { ALLTIP, GAME_EVENT, SERVER_EVENT } from "./Constants";
+import { ALLTIP, GAME_EVENT, ServerURl, SERVER_EVENT } from "./Constants";
 import {
   GameChoice,
   GameData,
@@ -32,49 +32,40 @@ export default class Game extends BaseScene {
 
   onLoad() {
     super.onLoad();
-    cc.director.on(GAME_EVENT.GAME_JOINSUCCESS, this._onJoin, this);
+    cc.director.on(GAME_EVENT.GAME_JOINSUCCESS, this._onJoinSuccess, this);
     cc.director.on(GAME_EVENT.GAME_JOINFAILED, this._onJoinFailed, this);
     cc.director.on(GAME_EVENT.GAME_START, this._onGameStart, this);
     cc.director.on(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
     cc.director.on(GAME_EVENT.GAME_MOVEMENT, this._onMovement, this);
-    cc.director.on(
-      GAME_EVENT.GAME_LOSTCONNECTION,
-      this._onLostConnection,
-      this
-    );
     this.footer.active = false;
     this.selectPic.opacity = 0;
     this.topicBar.init();
   }
 
   onDestroy() {
-    cc.director.off(GAME_EVENT.GAME_JOINSUCCESS, this._onJoin, this);
-    cc.director.off(GAME_EVENT.GAME_START, this._onGameStart, this);
+    super.onDestroy();
+    cc.director.off(GAME_EVENT.GAME_JOINSUCCESS, this._onJoinSuccess, this);
     cc.director.off(GAME_EVENT.GAME_JOINFAILED, this._onJoinFailed, this);
+    cc.director.off(GAME_EVENT.GAME_START, this._onGameStart, this);
     cc.director.off(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
     cc.director.off(GAME_EVENT.GAME_MOVEMENT, this._onMovement, this);
-    cc.director.off(
-      GAME_EVENT.GAME_LOSTCONNECTION,
-      this._onLostConnection,
-      this
-    );
   }
 
   _onGameStart(data) {
     this.unscheduleAllCallbacks();
+    this.footer.active = true;
     this.topicBar.staticLabel.active = false;
     this.topicBar.topicLabel.node.active = true;
     this.topicBar.startGameTime(data.gameTime);
     this.topicBar.updateTopicContent("这是第1题");
     this.topicBar.showTopicTip(true, 1);
-    this.footer.active = true;
+    this._changeSelectBtnStatus("correct");
   }
 
-  _onJoin(data) {
+  _onJoinSuccess(data) {
     if (!GameData.playing) {
       if (isSelfByName(data.joinPlayer.uname)) {
         cc.log(`玩家: ${data.joinPlayer.uname}加入成功`);
-        this._changeSelectBtnStatus("correct");
         GameData.playing = true;
         TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
         UIManager.instance.hideAll();
@@ -123,7 +114,6 @@ export default class Game extends BaseScene {
     switch (parm) {
       case "correct":
         this._changeSelectBtnStatus(parm);
-        this._showSelectPic(-190);
         Server.Instance.send(SERVER_EVENT.CHOICE, {
           choice: GameChoice.correct,
           playerName: PlayerData.uname,
@@ -131,7 +121,6 @@ export default class Game extends BaseScene {
         break;
       case "wrong":
         this._changeSelectBtnStatus(parm);
-        this._showSelectPic(200);
         Server.Instance.send(SERVER_EVENT.CHOICE, {
           choice: GameChoice.wrong,
           playerName: PlayerData.uname,
@@ -157,6 +146,8 @@ export default class Game extends BaseScene {
       .start();
   }
   _changeSelectBtnStatus(parm: string) {
+    this._showSelectPic(parm === "correct" ? -190 : 200);
+
     const correctBtn = this.footer
       .getChildByName("correctBtn")
       .getComponent(cc.Button);
@@ -167,8 +158,10 @@ export default class Game extends BaseScene {
       .getComponent(cc.Button);
     wrongBtn.interactable = parm !== "wrong";
   }
-  _onLostConnection() {
+  protected onLostConnection() {
+    cc.error("游戏断线 清空数据");
     GameData.playing = false;
     this._canChoose = true;
+    super.onLostConnection();
   }
 }

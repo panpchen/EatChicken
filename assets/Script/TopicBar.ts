@@ -36,9 +36,12 @@ export default class TopicBar extends cc.Component {
 
   update() {
     // 匹配时才显示大数字倒计时
-    if (this._isMatching && this._countTime >= 0 && this._countTime < 4) {
+    if (this._isMatching && this._countTime > 0 && this._countTime < 4) {
       this._onShowBigCountDownNum(true);
       this.bigCountDownTimeLabel.string = `${this._countTime}`;
+      this.bigCountDownTimeLabel.node.active = true;
+    } else {
+      this.bigCountDownTimeLabel.node.active = false;
     }
   }
 
@@ -53,14 +56,10 @@ export default class TopicBar extends cc.Component {
   startGameTime(time: number) {
     this._isMatching = false;
     this._onShowBigCountDownNum(false);
-    this._startCountDown(time, FontColorType.orange, () => {});
+    this._startCountDown(time, FontColorType.orange);
   }
 
-  _startCountDown(
-    countTime: number,
-    color: FontColorType,
-    callback?: Function
-  ) {
+  _startCountDown(countTime: number, color: FontColorType) {
     this._countTime = countTime / 1000;
     this.updateTime(this._countTime, color);
     this.unscheduleAllCallbacks();
@@ -69,24 +68,29 @@ export default class TopicBar extends cc.Component {
       this.updateTime(this._countTime, color);
       if (this._countTime <= 0) {
         cc.log("时间到");
-        callback && callback();
         this.unscheduleAllCallbacks();
         return;
       }
     }, 1);
   }
   updateTime(time: number, colorType: FontColorType) {
-    this.timeLabel.string = `${time}`;
-    let color = "";
-    switch (colorType) {
-      case FontColorType.green:
-        color = "#06DF00";
-        break;
-      case FontColorType.orange:
-        color = "#F94D00";
-        break;
+    if (time <= 0) {
+      this.timeLabel.node.active = false;
+      return;
+    } else {
+      this.timeLabel.node.active = true;
+      this.timeLabel.string = `${time}`;
+      let color = "";
+      switch (colorType) {
+        case FontColorType.green:
+          color = "#06DF00";
+          break;
+        case FontColorType.orange:
+          color = "#F94D00";
+          break;
+      }
+      this.timeLabel.node.color = cc.color().fromHEX(color);
     }
-    this.timeLabel.node.color = cc.color().fromHEX(color);
   }
 
   updateTopicContent(str: string) {

@@ -100,10 +100,9 @@ export class Room {
         time -= 1000;
         // console.log("匹配时间: ", time / 1000);
         if (time <= 0) {
-          time = 0;
+          callback && callback();
           clearInterval(this._interval);
           this._interval = null;
-          callback && callback();
         }
       }, 1000);
     }

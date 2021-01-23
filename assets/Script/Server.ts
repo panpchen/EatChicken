@@ -104,7 +104,6 @@ export default class Server extends cc.Component {
 
   _onClose(event) {
     cc.error("已断开连接！", event);
-    this._clearHeartBeat();
     this._isAlive = false;
     TipManager.Instance.showTips(ALLTIP.DISCONNECT);
     this._ws.removeEventListener("open", this._onOpen.bind(this));
