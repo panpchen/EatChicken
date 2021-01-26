@@ -8,7 +8,9 @@ var MAX_ROOT_MEMBER = 10;
 // 等待加入时间  ms
 var ADD_ROBOT_AFTER = 6000;
 // 答题游戏时间 ms
-var GAME_TIME = 10000;
+var GAME_TIME = 3000;
+// 总题目数
+var TOTAL_TITLE = 3;
 var nextRoomId = 0;
 /** 表示一个房间 */
 var Room = /** @class */ (function () {
@@ -18,10 +20,12 @@ var Room = /** @class */ (function () {
         this._players = null;
         //  座位号
         this._index = -1;
-        this._matchTime = ADD_ROBOT_AFTER;
-        this._gameTime = GAME_TIME;
+        this._curMatchTime = ADD_ROBOT_AFTER;
+        this._curGameTime = GAME_TIME;
         this._isGaming = false;
         this._interval = null;
+        // 当前房间进行的题目数
+        this._curTitleNum = 1;
         this._players = {};
         for (var i = 0; i < 18; i++) {
             this._players[i] = null;
@@ -67,10 +71,10 @@ var Room = /** @class */ (function () {
             p.send(signal_1["default"].JOIN_SUCCESS, {
                 playerList: list,
                 joinPlayer: p.user,
-                matchTime: _this._matchTime
+                matchTime: _this._curMatchTime
             });
         });
-        this._startCountDown(this._matchTime, this._playGame.bind(this));
+        this._startMatchCountdown(this._playGame.bind(this));
         // setTimeout(() => {
         //   if (this.players.length < MAX_ROOT_MEMBER) {
         //     // const Robot = require("./robot").Robot;
@@ -79,21 +83,34 @@ var Room = /** @class */ (function () {
         //   }
         // }, ADD_ROBOT_AFTER);
     };
-    Room.prototype._startCountDown = function (time, callback) {
+    Room.prototype._startMatchCountdown = function (callback) {
         var _this = this;
-        // 游戏开始，房间不能再加入玩家
-        // console.log("匹配时间: ", time / 1000);
         if (!this._interval) {
             this._interval = setInterval(function () {
-                time -= 1000;
-                // console.log("匹配时间: ", time / 1000);
-                if (time <= 0) {
-                    callback && callback();
+                _this._curMatchTime -= 1000;
+                if (_this._curMatchTime <= 0) {
                     clearInterval(_this._interval);
                     _this._interval = null;
+                    callback && callback();
                 }
             }, 1000);
         }
+    };
+    Room.prototype._startGameCountdown = function (callback) {
+        var _this = this;
+        this._curGameTime = GAME_TIME;
+        if (this._interval) {
+            clearInterval(this._interval);
+            this._interval = null;
+        }
+        this._interval = setInterval(function () {
+            _this._curGameTime -= 1000;
+            if (_this._curGameTime <= 0) {
+                clearInterval(_this._interval);
+                _this._interval = null;
+                callback && callback();
+            }
+        }, 1000);
     };
     /** 从会话删除指定编辑客户端 */
     Room.prototype.removePlayer = function (removePlayer) {
@@ -205,14 +222,27 @@ var Room = /** @class */ (function () {
             if (p) {
                 p.reset();
                 p.send(signal_1["default"].START, {
-                    gameTime: this._gameTime
+                    curGameTime: this._curGameTime,
+                    curTitleNum: this._curTitleNum
                 });
             }
         }
-        this._startCountDown(this._gameTime, this._finishGame.bind(this));
+        // 每题答题时间到了刷新题目
+        this._startGameCountdown(this._updateNextTitle.bind(this));
+    };
+    Room.prototype._updateNextTitle = function () {
+        if (this._curTitleNum === TOTAL_TITLE) {
+            console.log("游戏结束");
+            // this._finishGame();
+        }
+        else {
+            this._curTitleNum++;
+            console.log("更新题目： ", this._curTitleNum);
+            this._startGameCountdown(this._updateNextTitle.bind(this));
+        }
     };
     Room.prototype._finishGame = function () {
-        console.log("游戏时间到，结束");
+        console.log("游戏结束");
         return;
         // const clients = this.clients;
         // for (let i = 0; i < MAX_ROOT_MEMBER; i++) {
@@ -252,6 +282,9 @@ var Room = /** @class */ (function () {
         // });
         // this._isGaming = false;
         // this._index = 0 ;
+        // this._curTitleNum = 1;
+        // this._matchTime = ADD_ROBOT_AFTER;
+        // this._gameTime =  GAME_TIME;
     };
     Room.all = function () {
         return globalRoomList.slice();

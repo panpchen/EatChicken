@@ -11,4 +11,6 @@ const { ccclass, property } = cc._decorator;
 export default class Obstacle extends cc.Component {
   @property(cc.Sprite)
   sp: cc.Sprite = null;
+
+  init() {}
 }

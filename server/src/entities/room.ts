@@ -10,7 +10,9 @@ const MAX_ROOT_MEMBER = 10;
 const ADD_ROBOT_AFTER = 6000;
 
 // 答题游戏时间 ms
-const GAME_TIME = 10000;
+const GAME_TIME = 3000;
+// 总题目数
+const TOTAL_TITLE: number = 3;
 
 let nextRoomId = 0;
 
@@ -22,10 +24,12 @@ export class Room {
 
   //  座位号
   private _index: number = -1;
-  private _matchTime: number = ADD_ROBOT_AFTER;
-  private _gameTime: number = GAME_TIME;
+  private _curMatchTime: number = ADD_ROBOT_AFTER;
+  private _curGameTime: number = GAME_TIME;
   private _isGaming: boolean = false;
   private _interval = null;
+  // 当前房间进行的题目数
+  private _curTitleNum: number = 1;
 
   private constructor() {
     this._players = {};
@@ -77,11 +81,11 @@ export class Room {
       p.send(signal.JOIN_SUCCESS, {
         playerList: list,
         joinPlayer: p.user,
-        matchTime: this._matchTime,
+        matchTime: this._curMatchTime,
       });
     });
 
-    this._startCountDown(this._matchTime, this._playGame.bind(this));
+    this._startMatchCountdown(this._playGame.bind(this));
 
     // setTimeout(() => {
     //   if (this.players.length < MAX_ROOT_MEMBER) {
@@ -92,20 +96,32 @@ export class Room {
     // }, ADD_ROBOT_AFTER);
   }
 
-  private _startCountDown(time: number, callback?: Function) {
-    // 游戏开始，房间不能再加入玩家
-    // console.log("匹配时间: ", time / 1000);
+  private _startMatchCountdown(callback?: Function) {
     if (!this._interval) {
       this._interval = setInterval(() => {
-        time -= 1000;
-        // console.log("匹配时间: ", time / 1000);
-        if (time <= 0) {
-          callback && callback();
+        this._curMatchTime -= 1000;
+        if (this._curMatchTime <= 0) {
           clearInterval(this._interval);
           this._interval = null;
+          callback && callback();
         }
       }, 1000);
     }
+  }
+  private _startGameCountdown(callback?: Function) {
+    this._curGameTime = GAME_TIME;
+    if (this._interval) {
+      clearInterval(this._interval);
+      this._interval = null;
+    }
+    this._interval = setInterval(() => {
+      this._curGameTime -= 1000;
+      if (this._curGameTime <= 0) {
+        clearInterval(this._interval);
+        this._interval = null;
+        callback && callback();
+      }
+    }, 1000);
   }
 
   /** 从会话删除指定编辑客户端 */
@@ -235,15 +251,29 @@ export class Room {
       if (p) {
         p.reset();
         p.send(signal.START, {
-          gameTime: this._gameTime,
+          curGameTime: this._curGameTime,
+          curTitleNum: this._curTitleNum,
         });
       }
     }
-    this._startCountDown(this._gameTime, this._finishGame.bind(this));
+
+    // 每题答题时间到了刷新题目
+    this._startGameCountdown(this._updateNextTitle.bind(this));
+  }
+
+  private _updateNextTitle() {
+    if (this._curTitleNum === TOTAL_TITLE) {
+      console.log("游戏结束");
+      // this._finishGame();
+    } else {
+      this._curTitleNum++;
+      console.log("更新题目： ", this._curTitleNum);
+      this._startGameCountdown(this._updateNextTitle.bind(this));
+    }
   }
 
   private _finishGame() {
-    console.log("游戏时间到，结束");
+    console.log("游戏结束");
     return;
     // const clients = this.clients;
     // for (let i = 0; i < MAX_ROOT_MEMBER; i++) {
@@ -281,8 +311,12 @@ export class Room {
     // clients.forEach((client) => {
     //   client.emit("result", { result });
     // });
+
     // this._isGaming = false;
     // this._index = 0 ;
+    // this._curTitleNum = 1;
+    // this._matchTime = ADD_ROBOT_AFTER;
+    // this._gameTime =  GAME_TIME;
   }
 
   public static all() {

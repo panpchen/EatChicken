@@ -60,8 +60,13 @@ export default class Server extends cc.Component {
     const result = JSON.parse(decodeURIComponent(atob(data)));
     cc.log(`收到服务端消息 ${JSON.stringify(result)}`);
     switch (result.eventName) {
-      case SERVER_EVENT.RESULT:
-        cc.log("响应服务器游戏结果消息");
+      case SERVER_EVENT.NEXT_TITLE:
+        cc.director.emit(GAME_EVENT.GAME_NEXTTITLE, result.data);
+        cc.log("响应服务器题目刷新");
+        break;
+      case SERVER_EVENT.OVER:
+        cc.director.emit(GAME_EVENT.GAME_OVER, result.data);
+        cc.log("响应服务器游戏结束");
         break;
       case SERVER_EVENT.HI:
         cc.log("响应服务器HI消息");
