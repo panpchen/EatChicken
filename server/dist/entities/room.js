@@ -8,7 +8,7 @@ var MAX_ROOT_MEMBER = 10;
 // 等待加入时间  ms
 var ADD_ROBOT_AFTER = 6000;
 // 答题游戏时间 ms
-var GAME_TIME = 3000;
+var GAME_TIME = 5000;
 // 总题目数
 var TOTAL_TITLE = 3;
 var nextRoomId = 0;
@@ -25,7 +25,7 @@ var Room = /** @class */ (function () {
         this._isGaming = false;
         this._interval = null;
         // 当前房间进行的题目数
-        this._curTitleNum = 1;
+        this._curTitleId = 0;
         this._players = {};
         for (var i = 0; i < 18; i++) {
             this._players[i] = null;
@@ -166,12 +166,7 @@ var Room = /** @class */ (function () {
                 break;
             }
         }
-        for (var key in this._players) {
-            var p = this._players[key];
-            if (p) {
-                p.send(signal_1["default"].MOVEMENT, { targetIndex: targetIndex, playerName: playerName });
-            }
-        }
+        this._sendAll(signal_1["default"].MOVEMENT, { targetIndex: targetIndex, playerName: playerName });
     };
     Room.prototype.movePlayerToRight = function (playerName) {
         var targetIndex = -1;
@@ -184,12 +179,7 @@ var Room = /** @class */ (function () {
                 break;
             }
         }
-        for (var key in this._players) {
-            var p = this._players[key];
-            if (p) {
-                p.send(signal_1["default"].MOVEMENT, { targetIndex: targetIndex, playerName: playerName });
-            }
-        }
+        this._sendAll(signal_1["default"].MOVEMENT, { targetIndex: targetIndex, playerName: playerName });
     };
     Room.prototype._setPlayerIndex = function (playerName, tarIndex) {
         var p = this._getPlayerByName(playerName);
@@ -217,33 +207,48 @@ var Room = /** @class */ (function () {
     Room.prototype._playGame = function () {
         console.log("游戏开始");
         this._isGaming = true;
-        for (var key in this._players) {
-            var p = this._players[key];
-            if (p) {
-                p.reset();
-                p.send(signal_1["default"].START, {
-                    curGameTime: this._curGameTime,
-                    curTitleNum: this._curTitleNum
-                });
-            }
-        }
+        this._sendAll(signal_1["default"].START, {
+            curGameTime: this._curGameTime,
+            curTitleId: this._curTitleId
+        });
         // 每题答题时间到了刷新题目
         this._startGameCountdown(this._updateNextTitle.bind(this));
     };
+    Room.prototype._sendAll = function (eventName, data) {
+        for (var key in this._players) {
+            var p = this._players[key];
+            if (p) {
+                p.send(eventName, data);
+            }
+        }
+    };
     Room.prototype._updateNextTitle = function () {
-        if (this._curTitleNum === TOTAL_TITLE) {
-            console.log("游戏结束");
-            // this._finishGame();
+        var _this = this;
+        if (this._curTitleId === TOTAL_TITLE - 1) {
+            this._finishGame();
         }
         else {
-            this._curTitleNum++;
-            console.log("更新题目： ", this._curTitleNum);
-            this._startGameCountdown(this._updateNextTitle.bind(this));
+            this._curTitleId++;
+            // 等待一段时间继续下一题
+            setTimeout(function () {
+                console.log("显示题目： ", _this._curTitleId);
+                _this._curGameTime = GAME_TIME;
+                _this._sendAll(signal_1["default"].NEXT, {
+                    curTitleId: _this._curTitleId,
+                    curGameTime: _this._curGameTime
+                });
+                _this._startGameCountdown(_this._updateNextTitle.bind(_this));
+            }, 2000);
         }
     };
     Room.prototype._finishGame = function () {
         console.log("游戏结束");
-        return;
+        this._isGaming = false;
+        this._index = 0;
+        this._curTitleId = 1;
+        this._curMatchTime = ADD_ROBOT_AFTER;
+        this._curGameTime = GAME_TIME;
+        this._sendAll(signal_1["default"].OVER);
         // const clients = this.clients;
         // for (let i = 0; i < MAX_ROOT_MEMBER; i++) {
         //   let player1 = clients[i];
@@ -280,11 +285,6 @@ var Room = /** @class */ (function () {
         // clients.forEach((client) => {
         //   client.emit("result", { result });
         // });
-        // this._isGaming = false;
-        // this._index = 0 ;
-        // this._curTitleNum = 1;
-        // this._matchTime = ADD_ROBOT_AFTER;
-        // this._gameTime =  GAME_TIME;
     };
     Room.all = function () {
         return globalRoomList.slice();

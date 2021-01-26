@@ -124,11 +124,6 @@ var Player = /** @class */ (function () {
             console.error("服务端发送错误: ", err);
         }
     };
-    Player.prototype.reset = function () {
-        this.gameData.totalCoin = 0;
-        this.gameData.totalScore = 0;
-        this.gameData.gameChoice = gameData_1.GameChoice.correct;
-    };
     Player.prototype.closeSocket = function () {
         this._ws.close();
     };

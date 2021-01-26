@@ -12,7 +12,6 @@ import {
   ServerURl,
   SERVER_EVENT,
 } from "./Constants";
-import { GameData } from "./GameData";
 import TipManager from "./TipManager";
 
 const { ccclass, property } = cc._decorator;
@@ -60,14 +59,6 @@ export default class Server extends cc.Component {
     const result = JSON.parse(decodeURIComponent(atob(data)));
     cc.log(`收到服务端消息 ${JSON.stringify(result)}`);
     switch (result.eventName) {
-      case SERVER_EVENT.NEXT_TITLE:
-        cc.director.emit(GAME_EVENT.GAME_NEXTTITLE, result.data);
-        cc.log("响应服务器题目刷新");
-        break;
-      case SERVER_EVENT.OVER:
-        cc.director.emit(GAME_EVENT.GAME_OVER, result.data);
-        cc.log("响应服务器游戏结束");
-        break;
       case SERVER_EVENT.HI:
         cc.log("响应服务器HI消息");
         this.scheduleOnce(() => {
@@ -76,6 +67,14 @@ export default class Server extends cc.Component {
         break;
       case SERVER_EVENT.START:
         cc.director.emit(GAME_EVENT.GAME_START, result.data);
+        break;
+      case SERVER_EVENT.NEXT:
+        cc.log("响应服务器下一题");
+        cc.director.emit(GAME_EVENT.GAME_NEXT, result.data);
+        break;
+      case SERVER_EVENT.OVER:
+        cc.log("响应服务器游戏结束");
+        cc.director.emit(GAME_EVENT.GAME_OVER, result.data);
         break;
       case SERVER_EVENT.LEAVE:
         cc.director.emit(GAME_EVENT.GAME_LEAVE, result.data);

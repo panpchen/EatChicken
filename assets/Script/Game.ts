@@ -1,5 +1,11 @@
 import BaseScene from "./BaseScene";
-import { ALLTIP, GAME_EVENT, ServerURl, SERVER_EVENT } from "./Constants";
+import {
+  ALLTIP,
+  GAME_EVENT,
+  ServerURl,
+  SERVER_EVENT,
+  TITLES,
+} from "./Constants";
 import {
   GameChoice,
   GameData,
@@ -35,6 +41,8 @@ export default class Game extends BaseScene {
     cc.director.on(GAME_EVENT.GAME_JOINSUCCESS, this._onJoinSuccess, this);
     cc.director.on(GAME_EVENT.GAME_JOINFAILED, this._onJoinFailed, this);
     cc.director.on(GAME_EVENT.GAME_START, this._onGameStart, this);
+    cc.director.on(GAME_EVENT.GAME_OVER, this._onGameOver, this);
+    cc.director.on(GAME_EVENT.GAME_NEXT, this._onGameNext, this);
     cc.director.on(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
     cc.director.on(GAME_EVENT.GAME_MOVEMENT, this._onMovement, this);
     this.footer.active = false;
@@ -47,19 +55,38 @@ export default class Game extends BaseScene {
     cc.director.off(GAME_EVENT.GAME_JOINSUCCESS, this._onJoinSuccess, this);
     cc.director.off(GAME_EVENT.GAME_JOINFAILED, this._onJoinFailed, this);
     cc.director.off(GAME_EVENT.GAME_START, this._onGameStart, this);
+    cc.director.off(GAME_EVENT.GAME_OVER, this._onGameOver, this);
+    cc.director.off(GAME_EVENT.GAME_NEXT, this._onGameNext, this);
     cc.director.off(GAME_EVENT.GAME_LEAVE, this._onLeave, this);
     cc.director.off(GAME_EVENT.GAME_MOVEMENT, this._onMovement, this);
   }
 
   _onGameStart(data) {
     this.unscheduleAllCallbacks();
-    this.footer.active = true;
     this.topicBar.staticLabel.active = false;
     this.topicBar.topicLabel.node.active = true;
-    this.topicBar.startGameTime(data.gameTime);
-    this.topicBar.updateTopicContent("这是第1题");
-    this.topicBar.showTopicTip(true, 1);
+    this._updateContent(data);
+  }
+
+  _onGameOver(data) {
+    cc.error("游戏结束");
+  }
+
+  _onGameNext(data) {
+    cc.error("更新下一题: ", data);
+    this._updateContent(data);
+  }
+
+  _updateContent(data) {
+    this.topicBar.node.active = true;
+    this.footer.active = true;
+    this.topicBar.showTopicTip(true, data.curTitleId + 1);
+    this.topicBar.updateTopicContent(TITLES[data.curTitleId]);
     this._changeSelectBtnStatus("correct");
+    this.topicBar.startGameTime(data.curGameTime, () => {
+      this.topicBar.node.active = false;
+      this.footer.active = false;
+    });
   }
 
   _onJoinSuccess(data) {

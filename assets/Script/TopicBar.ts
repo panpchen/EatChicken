@@ -26,6 +26,8 @@ export default class TopicBar extends cc.Component {
 
   private _isMatching: boolean = false;
   private _countTime: number = 0;
+  private _countDownFunc = null;
+
   init() {
     this.timeLabel.string = "0";
     this.showTopicTip(false);
@@ -53,25 +55,31 @@ export default class TopicBar extends cc.Component {
     this._startCountDown(time, FontColorType.green);
   }
 
-  startGameTime(time: number) {
+  startGameTime(time: number, callback?: Function) {
     this._isMatching = false;
     this._onShowBigCountDownNum(false);
-    this._startCountDown(time, FontColorType.orange);
+    this._startCountDown(time, FontColorType.orange, callback);
   }
 
-  _startCountDown(countTime: number, color: FontColorType) {
+  _startCountDown(
+    countTime: number,
+    color: FontColorType,
+    callback?: Function
+  ) {
     this._countTime = countTime / 1000;
     this.updateTime(this._countTime, color);
-    this.unscheduleAllCallbacks();
-    this.schedule(() => {
+    this.unschedule(this._countDownFunc);
+    this._countDownFunc = () => {
       this._countTime--;
       this.updateTime(this._countTime, color);
       if (this._countTime <= 0) {
         cc.log("时间到");
-        this.unscheduleAllCallbacks();
+        callback && callback();
+        this.unschedule(this._countDownFunc);
         return;
       }
-    }, 1);
+    };
+    this.schedule(this._countDownFunc, 1);
   }
   updateTime(time: number, colorType: FontColorType) {
     if (time <= 0) {
@@ -94,12 +102,14 @@ export default class TopicBar extends cc.Component {
   }
 
   updateTopicContent(str: string) {
-    this.topicLabel.string = str;
+    if (str) {
+      this.topicLabel.string = str;
+    }
   }
 
   showTopicTip(isShow: boolean, num?: number) {
     this.tip.active = isShow;
-    if (this.tip.active) {
+    if (isShow) {
       this.tip
         .getChildByName("label")
         .getComponent(cc.Label).string = `第${num}题`;

@@ -10,7 +10,8 @@ const MAX_ROOT_MEMBER = 10;
 const ADD_ROBOT_AFTER = 6000;
 
 // 答题游戏时间 ms
-const GAME_TIME = 3000;
+const GAME_TIME = 5000;
+
 // 总题目数
 const TOTAL_TITLE: number = 3;
 
@@ -29,7 +30,7 @@ export class Room {
   private _isGaming: boolean = false;
   private _interval = null;
   // 当前房间进行的题目数
-  private _curTitleNum: number = 1;
+  private _curTitleId: number = 0;
 
   private constructor() {
     this._players = {};
@@ -186,12 +187,7 @@ export class Room {
       }
     }
 
-    for (let key in this._players) {
-      const p = this._players[key];
-      if (p) {
-        p.send(signal.MOVEMENT, { targetIndex, playerName });
-      }
-    }
+    this._sendAll(signal.MOVEMENT, { targetIndex, playerName });
   }
 
   public movePlayerToRight(playerName: string) {
@@ -206,12 +202,7 @@ export class Room {
       }
     }
 
-    for (let key in this._players) {
-      const p = this._players[key];
-      if (p) {
-        p.send(signal.MOVEMENT, { targetIndex, playerName });
-      }
-    }
+    this._sendAll(signal.MOVEMENT, { targetIndex, playerName });
   }
 
   _setPlayerIndex(playerName: string, tarIndex: number) {
@@ -246,35 +237,51 @@ export class Room {
   private _playGame() {
     console.log("游戏开始");
     this._isGaming = true;
-    for (let key in this._players) {
-      const p = this._players[key] as Player;
-      if (p) {
-        p.reset();
-        p.send(signal.START, {
-          curGameTime: this._curGameTime,
-          curTitleNum: this._curTitleNum,
-        });
-      }
-    }
+    this._sendAll(signal.START, {
+      curGameTime: this._curGameTime,
+      curTitleId: this._curTitleId,
+    });
 
     // 每题答题时间到了刷新题目
     this._startGameCountdown(this._updateNextTitle.bind(this));
   }
 
+  private _sendAll(eventName: string, data?: object) {
+    for (let key in this._players) {
+      const p = this._players[key] as Player;
+      if (p) {
+        p.send(eventName, data);
+      }
+    }
+  }
+
   private _updateNextTitle() {
-    if (this._curTitleNum === TOTAL_TITLE) {
-      console.log("游戏结束");
-      // this._finishGame();
+    if (this._curTitleId === TOTAL_TITLE - 1) {
+      this._finishGame();
     } else {
-      this._curTitleNum++;
-      console.log("更新题目： ", this._curTitleNum);
-      this._startGameCountdown(this._updateNextTitle.bind(this));
+      this._curTitleId++;
+      // 等待一段时间继续下一题
+      setTimeout(() => {
+        console.log("显示题目： ", this._curTitleId);
+        this._curGameTime = GAME_TIME;
+        this._sendAll(signal.NEXT, {
+          curTitleId: this._curTitleId,
+          curGameTime: this._curGameTime,
+        });
+        this._startGameCountdown(this._updateNextTitle.bind(this));
+      }, 2000);
     }
   }
 
   private _finishGame() {
     console.log("游戏结束");
-    return;
+    this._isGaming = false;
+    this._index = 0;
+    this._curTitleId = 1;
+    this._curMatchTime = ADD_ROBOT_AFTER;
+    this._curGameTime = GAME_TIME;
+
+    this._sendAll(signal.OVER);
     // const clients = this.clients;
     // for (let i = 0; i < MAX_ROOT_MEMBER; i++) {
     //   let player1 = clients[i];
@@ -311,14 +318,7 @@ export class Room {
     // clients.forEach((client) => {
     //   client.emit("result", { result });
     // });
-
-    // this._isGaming = false;
-    // this._index = 0 ;
-    // this._curTitleNum = 1;
-    // this._matchTime = ADD_ROBOT_AFTER;
-    // this._gameTime =  GAME_TIME;
   }
-
   public static all() {
     return globalRoomList.slice();
   }

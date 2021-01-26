@@ -10,12 +10,11 @@ export enum SERVER_EVENT {
   JOIN_SUCCESS = "JOIN_SUCCESS",
   JOIN_FAILED = "JOIN_FAILED",
   START = "START",
-  NEXT_TITLE = "NEXT_TITLE",
+  NEXT = "NEXT",
   OVER = "OVER",
   LEAVE = "LEAVE",
   CHOICE = "CHOICE",
   MOVEMENT = "MOVEMENT",
-  VALIDATE = "VALIDATE", // 提交答案验证
   HELLO = "HELLO", //  hi-hello 握手
   HI = "HI",
   HEARTBEAT = "HEARTBEAT", // 心跳检测
@@ -26,8 +25,8 @@ export enum GAME_EVENT {
   GAME_MULTIPLAYER = "GAME_MULTIPLAYER",
   GAME_LOGINGAME = "GAME_LOGINGAME",
   GAME_START = "GAME_START",
-  GAME_NEXTTITLE = "GAME_NEXTTITLE",
   GAME_OVER = "GAME_OVER",
+  GAME_NEXT = "GAME_NEXT",
   GAME_JOINSUCCESS = "GAME_JOINSUCCESS",
   GAME_JOINFAILED = "GAME_JOINFAILED",
   GAME_LEAVE = "GAME_LEAVE",
@@ -45,6 +44,8 @@ export enum ALLTIP {
   JOINSUCCESS = "加入游戏成功",
   INGAME = "你已经在游戏中",
 }
+
+export const TITLES = ["题目1", "题目2", "题目3", "题目4"];
 
 // 服务器断线原因
 export enum CLOSE_CODE {

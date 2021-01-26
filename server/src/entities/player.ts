@@ -145,12 +145,6 @@ export default class Player {
     }
   }
 
-  reset() {
-    this.gameData.totalCoin = 0;
-    this.gameData.totalScore = 0;
-    this.gameData.gameChoice = GameChoice.correct;
-  }
-
   closeSocket() {
     this._ws.close();
   }
