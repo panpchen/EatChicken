@@ -1,0 +1,27 @@
+{
+  "name": "EatChicken",
+  "version": "1.0.0",
+  "description": "类似吃鸡答题小游戏",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panpchen/EatChicken.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/panpchen/EatChicken/issues"
+  },
+  "homepage": "https://github.com/panpchen/EatChicken#readme",
+  "dependencies": {
+    "uuid": {
+      "version": "8.3.2",
+      "resolved": "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz",
+      "integrity": "sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg=="
+    }
+  }
+}
