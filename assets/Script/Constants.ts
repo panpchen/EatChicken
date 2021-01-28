@@ -47,6 +47,11 @@ export enum ALLTIP {
 
 export const TITLES = ["题目1", "题目2", "题目3", "题目4"];
 
+export enum OBSTACLE_TYPE {
+  HOLE,
+  MAMMOTH,
+}
+
 // 服务器断线原因
 export enum CLOSE_CODE {
   LOGIN_FAILED = 4000,

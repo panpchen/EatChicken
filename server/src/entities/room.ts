@@ -1,4 +1,5 @@
 import signal from "../enums/signal";
+import { OBSTACLE_TYPE } from "./gameData";
 import Player from "./player";
 
 const globalRoomList: Room[] = [];
@@ -10,10 +11,10 @@ const MAX_ROOT_MEMBER = 10;
 const ADD_ROBOT_AFTER = 6000;
 
 // 答题游戏时间 ms
-const GAME_TIME = 5000;
+const GAME_TIME = 3000;
 
 // 总题目数
-const TOTAL_TITLE: number = 3;
+const TOTAL_TITLE: number = 1000;
 
 let nextRoomId = 0;
 
@@ -29,6 +30,7 @@ export class Room {
   private _curGameTime: number = GAME_TIME;
   private _isGaming: boolean = false;
   private _interval = null;
+  private _timeOut = null;
   // 当前房间进行的题目数
   private _curTitleId: number = 0;
 
@@ -167,8 +169,11 @@ export class Room {
     }
 
     if (isAllNull) {
+      console.log("房间已解散");
+      clearInterval(this._interval);
+      clearTimeout(this._timeOut);
       const roomIndex = globalRoomList.indexOf(this);
-      if (roomIndex > -1) {
+      if (roomIndex !== -1) {
         let room = globalRoomList.splice(roomIndex, 1);
         room = null;
       }
@@ -197,7 +202,7 @@ export class Room {
       if (!this._players[key] && k >= 9) {
         targetIndex = k;
         this._setPlayerIndex(playerName, targetIndex);
-        console.log("右边的空位：", k, "信息：", playerName);
+        console.log("右边的空位：", k, " 信息：", playerName);
         break;
       }
     }
@@ -224,13 +229,6 @@ export class Room {
     return null;
   }
   public isFull() {
-    console.log(
-      `当前房间人数: ${
-        Object.values<Player>(this._players).filter((p) => {
-          return p !== null;
-        }).length
-      }/${MAX_ROOT_MEMBER}`
-    );
     return Object.values(this._players).length == MAX_ROOT_MEMBER;
   }
 
@@ -261,15 +259,15 @@ export class Room {
     } else {
       this._curTitleId++;
       // 等待一段时间继续下一题
-      setTimeout(() => {
-        console.log("显示题目： ", this._curTitleId);
+      this._timeOut = setTimeout(() => {
+        console.log("显示题目： ", this._curTitleId + 1);
         this._curGameTime = GAME_TIME;
         this._sendAll(signal.NEXT, {
           curTitleId: this._curTitleId,
           curGameTime: this._curGameTime,
         });
         this._startGameCountdown(this._updateNextTitle.bind(this));
-      }, 2000);
+      }, 4000);
     }
   }
 
@@ -280,6 +278,8 @@ export class Room {
     this._curTitleId = 1;
     this._curMatchTime = ADD_ROBOT_AFTER;
     this._curGameTime = GAME_TIME;
+    clearTimeout(this._timeOut);
+    clearInterval(this._interval);
 
     this._sendAll(signal.OVER);
     // const clients = this.clients;

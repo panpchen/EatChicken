@@ -8,3 +8,8 @@ export interface GameData {
   totalScore: number;
   totalCoin: number;
 }
+
+export enum OBSTACLE_TYPE {
+  HOLE,
+  MAMMOTH,
+}

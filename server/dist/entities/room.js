@@ -8,9 +8,9 @@ var MAX_ROOT_MEMBER = 10;
 // 等待加入时间  ms
 var ADD_ROBOT_AFTER = 6000;
 // 答题游戏时间 ms
-var GAME_TIME = 5000;
+var GAME_TIME = 3000;
 // 总题目数
-var TOTAL_TITLE = 3;
+var TOTAL_TITLE = 1000;
 var nextRoomId = 0;
 /** 表示一个房间 */
 var Room = /** @class */ (function () {
@@ -24,6 +24,7 @@ var Room = /** @class */ (function () {
         this._curGameTime = GAME_TIME;
         this._isGaming = false;
         this._interval = null;
+        this._timeOut = null;
         // 当前房间进行的题目数
         this._curTitleId = 0;
         this._players = {};
@@ -148,8 +149,11 @@ var Room = /** @class */ (function () {
             }
         }
         if (isAllNull) {
+            console.log("房间已解散");
+            clearInterval(this._interval);
+            clearTimeout(this._timeOut);
             var roomIndex = globalRoomList.indexOf(this);
-            if (roomIndex > -1) {
+            if (roomIndex !== -1) {
                 var room = globalRoomList.splice(roomIndex, 1);
                 room = null;
             }
@@ -175,7 +179,7 @@ var Room = /** @class */ (function () {
             if (!this._players[key] && k >= 9) {
                 targetIndex = k;
                 this._setPlayerIndex(playerName, targetIndex);
-                console.log("右边的空位：", k, "信息：", playerName);
+                console.log("右边的空位：", k, " 信息：", playerName);
                 break;
             }
         }
@@ -199,9 +203,6 @@ var Room = /** @class */ (function () {
         return null;
     };
     Room.prototype.isFull = function () {
-        console.log("\u5F53\u524D\u623F\u95F4\u4EBA\u6570: " + Object.values(this._players).filter(function (p) {
-            return p !== null;
-        }).length + "/" + MAX_ROOT_MEMBER);
         return Object.values(this._players).length == MAX_ROOT_MEMBER;
     };
     Room.prototype._playGame = function () {
@@ -230,15 +231,15 @@ var Room = /** @class */ (function () {
         else {
             this._curTitleId++;
             // 等待一段时间继续下一题
-            setTimeout(function () {
-                console.log("显示题目： ", _this._curTitleId);
+            this._timeOut = setTimeout(function () {
+                console.log("显示题目： ", _this._curTitleId + 1);
                 _this._curGameTime = GAME_TIME;
                 _this._sendAll(signal_1["default"].NEXT, {
                     curTitleId: _this._curTitleId,
                     curGameTime: _this._curGameTime
                 });
                 _this._startGameCountdown(_this._updateNextTitle.bind(_this));
-            }, 2000);
+            }, 4000);
         }
     };
     Room.prototype._finishGame = function () {
@@ -248,6 +249,8 @@ var Room = /** @class */ (function () {
         this._curTitleId = 1;
         this._curMatchTime = ADD_ROBOT_AFTER;
         this._curGameTime = GAME_TIME;
+        clearTimeout(this._timeOut);
+        clearInterval(this._interval);
         this._sendAll(signal_1["default"].OVER);
         // const clients = this.clients;
         // for (let i = 0; i < MAX_ROOT_MEMBER; i++) {

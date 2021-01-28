@@ -1,19 +1,9 @@
 import BaseScene from "./BaseScene";
-import {
-  ALLTIP,
-  GAME_EVENT,
-  ServerURl,
-  SERVER_EVENT,
-  TITLES,
-} from "./Constants";
-import {
-  GameChoice,
-  GameData,
-  IPlayer,
-  isSelfByName,
-  PlayerData,
-} from "./GameData";
+import { ALLTIP, GAME_EVENT, SERVER_EVENT, TITLES } from "./Constants";
+import { GameChoice, GameData, isSelfByName, PlayerData } from "./GameData";
+import ObstacleManager from "./ObstacleManager";
 import PlayerManager from "./PlayerManager";
+import ScrollingBg from "./ScrollingBg";
 import Server from "./Server";
 import TipManager from "./TipManager";
 import TopicBar from "./TopicBar";
@@ -31,6 +21,10 @@ export default class Game extends BaseScene {
   topicBar: TopicBar = null;
   @property(PlayerManager)
   playerManager: PlayerManager = null;
+  @property(ScrollingBg)
+  scrollingBg: ScrollingBg = null;
+  @property(ObstacleManager)
+  obstacleManager: ObstacleManager = null;
   @property(cc.Node)
   selectPic: cc.Node = null;
 
@@ -65,6 +59,7 @@ export default class Game extends BaseScene {
     this.unscheduleAllCallbacks();
     this.topicBar.staticLabel.active = false;
     this.topicBar.topicLabel.node.active = true;
+    this._changeSelectBtnStatus("correct");
     this._updateContent(data);
   }
 
@@ -81,11 +76,16 @@ export default class Game extends BaseScene {
     this.topicBar.node.active = true;
     this.footer.active = true;
     this.topicBar.showTopicTip(true, data.curTitleId + 1);
-    this.topicBar.updateTopicContent(TITLES[data.curTitleId]);
-    this._changeSelectBtnStatus("correct");
+    this.obstacleManager.clearObstacle();
+    this.topicBar.updateTopicContent(
+      data.curTitleId >= TITLES.length
+        ? TITLES[TITLES.length - 1]
+        : TITLES[data.curTitleId]
+    );
     this.topicBar.startGameTime(data.curGameTime, () => {
       this.topicBar.node.active = false;
       this.footer.active = false;
+      this.obstacleManager.createObstacle();
     });
   }
 
@@ -94,6 +94,7 @@ export default class Game extends BaseScene {
       if (isSelfByName(data.joinPlayer.uname)) {
         cc.log(`玩家: ${data.joinPlayer.uname}加入成功`);
         GameData.playing = true;
+        this.scrollingBg.startScroll();
         TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
         UIManager.instance.hideAll();
         this.topicBar.startMatchTime(data.matchTime);

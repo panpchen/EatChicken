@@ -19,7 +19,7 @@ export default class Tip extends cc.Component {
   }
 
   _onHideSelf() {
-    cc.Tween.stopAll();
+    cc.Tween.stopAllByTarget(this.node);
     cc.tween(this.node).delay(0.8).to(0.5, { opacity: 0 }).start();
   }
 }
