@@ -5,7 +5,7 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { OBSTACLE_TYPE } from "./Constants";
+import { IObstacle, OBSTACLE_TYPE } from "./Constants";
 import Obstacle from "./Obstacle";
 import { Utils } from "./Utils";
 
@@ -23,12 +23,15 @@ export default class ObstacleManager extends cc.Component {
       this._lastObstacle.parent = this.node;
       this._lastObstacle.setPosition(cc.v2(200, -cc.winSize.height));
       let type = Utils.getRangeRandom(0, 1);
+      let data: IObstacle = { type: OBSTACLE_TYPE.HOLE, speed: 0 };
       if (type < 0.4) {
-        type = OBSTACLE_TYPE.HOLE;
+        data.type = OBSTACLE_TYPE.HOLE;
+        data.speed = 10;
       } else {
         type = OBSTACLE_TYPE.MAMMOTH;
+        data.speed = 10;
       }
-      this._lastObstacle.getComponent(Obstacle).init(type);
+      this._lastObstacle.getComponent(Obstacle).init(data);
     }
   }
   clearObstacle() {

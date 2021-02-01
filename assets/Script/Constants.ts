@@ -51,6 +51,10 @@ export enum OBSTACLE_TYPE {
   HOLE,
   MAMMOTH,
 }
+export interface IObstacle {
+  type: OBSTACLE_TYPE;
+  speed: number;
+}
 
 // 服务器断线原因
 export enum CLOSE_CODE {
