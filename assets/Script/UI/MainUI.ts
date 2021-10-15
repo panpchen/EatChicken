@@ -6,11 +6,10 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import { ALLTIP, SERVER_EVENT } from "../Constants";
-import { GameData, PlayerData } from "../GameData";
+import { PlayerData } from "../GameData";
 import Server from "../Server";
 import TipManager from "../TipManager";
 import BaseUI from "./BaseUI";
-import { UIManager, UIType } from "./UIManager";
 
 const { ccclass, property } = cc._decorator;
 

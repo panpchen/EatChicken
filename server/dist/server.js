@@ -42,8 +42,7 @@ var fs = require("fs");
 var Server = /** @class */ (function () {
     function Server() {
         this.config = null;
-        this._loginPlayers = []; // 记录登录过的玩家
-        this._joinPlayers = []; // 记录加入游戏的玩家
+        this._clients = [];
         Server.$ = this;
     }
     Server.prototype.init = function () {
@@ -65,11 +64,13 @@ var Server = /** @class */ (function () {
         });
     };
     Server.prototype.setupWebSocket = function () {
+        var _this = this;
         var wss = new ws_1.Server({ port: this.config.port });
         console.log("\x1b[33m%s\x1b[0m", "Websocket server listening on port " + this.config.port + "...");
         wss.on("connection", function (ws, req) {
             console.log("已连接服务器 在线人数：", wss.clients.size);
             var player = new player_1["default"](ws);
+            _this._clients.push(player);
             player.connect();
         });
     };
@@ -85,41 +86,21 @@ var Server = /** @class */ (function () {
             });
         });
     };
-    Server.prototype.recordLoginPlayerToList = function (player) {
-        var haveLogin = this._loginPlayers.some(function (p) {
-            return p.user.uname === player.user.uname;
-        });
-        // 重复登录返回false
-        if (!haveLogin) {
-            this._loginPlayers.push(player);
-            return true;
+    Server.prototype.isRepeatLogin = function (player) {
+        var count = 0;
+        for (var i = 0; i < this._clients.length; i++) {
+            if (this._clients[i].user.uname == player.user.uname) {
+                count++;
+            }
         }
-        return false;
+        return count > 1;
     };
-    Server.prototype.removeLoginPlayer = function (player) {
-        var delIndex = this._loginPlayers.findIndex(function (p) {
-            return p.user.uname === player.user.uname;
-        });
-        if (delIndex !== -1) {
-            this._loginPlayers.splice(delIndex, 1);
-        }
-    };
-    Server.prototype.recordJoinPlayerToList = function (player) {
-        var haveJoin = this._joinPlayers.some(function (p) {
-            return p.user.uname === player.user.uname;
-        });
-        if (!haveJoin) {
-            this._joinPlayers.push(player);
-            return true;
-        }
-        return false;
-    };
-    Server.prototype.removeJoinPlayer = function (player) {
-        var delIndex = this._joinPlayers.findIndex(function (p) {
-            return p.user.uname === player.user.uname;
-        });
-        if (delIndex !== -1) {
-            this._joinPlayers.splice(delIndex, 1);
+    Server.prototype.removeClient = function (player) {
+        for (var i = this._clients.length - 1; i >= 0; i--) {
+            if (this._clients[i].user.uname == player.user.uname) {
+                this._clients.splice(i, 1);
+                break;
+            }
         }
     };
     Server.$ = null;

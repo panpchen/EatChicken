@@ -1,6 +1,7 @@
 {
-  "ver": "2.3.5",
+  "ver": "2.3.7",
   "uuid": "16c4736e-1c92-4171-bed3-2099410cbc5b",
+  "importer": "texture",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
@@ -12,8 +13,9 @@
   "platformSettings": {},
   "subMetas": {
     "题目框": {
-      "ver": "1.0.4",
+      "ver": "1.0.6",
       "uuid": "941981b0-728f-4042-89a0-7eb8fdc84382",
+      "importer": "sprite-frame",
       "rawTextureUuid": "16c4736e-1c92-4171-bed3-2099410cbc5b",
       "trimType": "auto",
       "trimThreshold": 1,

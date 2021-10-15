@@ -2,5 +2,35 @@
 	"game": {
 		"name": "未知游戏",
 		"appid": "UNKNOW"
-	}
+	},
+	"configs": [
+		{
+			"appid": "698795248",
+			"services": [
+				{
+					"service_id": "242",
+					"enable": false
+				},
+				{
+					"service_id": "270",
+					"enable": false
+				}
+			]
+		},
+		{
+			"appid": "UNKNOW"
+		},
+		{
+			"appid": "698795248",
+			"services": [
+				{
+					"service_id": "270",
+					"enable": false
+				}
+			]
+		},
+		{
+			"appid": "UNKNOW"
+		}
+	]
 }

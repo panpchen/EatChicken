@@ -5,6 +5,8 @@ var room_1 = require("./room");
 var signal_1 = require("../enums/signal");
 var server_1 = require("../server");
 var Player = /** @class */ (function () {
+    // private _loginPlayers: Player[] = [];
+    // private _joinPlayers: Player[] = [];
     function Player(ws) {
         this._ws = null;
         this.user = null;
@@ -32,13 +34,13 @@ var Player = /** @class */ (function () {
             switch (result.eventName) {
                 case signal_1["default"].HELLO:
                     _this.user = result.data.user;
-                    if (server_1["default"].$.recordLoginPlayerToList(_this)) {
-                        _this._startHeartBeat();
-                        _this.send(signal_1["default"].HI);
-                    }
-                    else {
+                    if (server_1["default"].$.isRepeatLogin(_this)) {
                         console.log(_this.user.uname + " \u91CD\u590D\u767B\u5F55, \u767B\u51FA\u53E6\u4E00\u4E2A");
                         _this.send(signal_1["default"].LOGIN_FAILED);
+                    }
+                    else {
+                        _this._startHeartBeat();
+                        _this.send(signal_1["default"].HI);
                     }
                     break;
                 case signal_1["default"].JOIN:
@@ -63,18 +65,13 @@ var Player = /** @class */ (function () {
             }
         });
         this._ws.on("error", function (msg) {
-            console.log("已断开连接： onError");
+            console.log("已断开连接：onError");
         });
         this._ws.on("close", function (code, reason) {
             console.log("\u5DF2\u65AD\u5F00\u8FDE\u63A5: " + _this.user.uname);
-            // 错误码: 4000:重复登录，登出
-            // 如何不是重复登录，不用删除
-            if (code !== 4000) {
-                server_1["default"].$.removeLoginPlayer(_this);
-            }
-            server_1["default"].$.removeJoinPlayer(_this);
             clearInterval(_this._pingInterval);
             _this._isAlive = false;
+            server_1["default"].$.removeClient(_this);
             if (_this._room) {
                 _this._room.removePlayer(_this);
                 _this._room = null;
@@ -96,14 +93,11 @@ var Player = /** @class */ (function () {
             }
             _this._isAlive = false;
             _this._ws.ping();
-        }, 10000); // 心跳检测间隔 15秒
+        }, 10000); // 心跳检测间隔
     };
     Player.prototype._ansJoin = function (result) {
-        if (server_1["default"].$.recordJoinPlayerToList(this)) {
-            this._room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
-            this._room.addPlayer(this);
-        }
-        else {
+        this._room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
+        if (!this._room.addPlayer(this)) {
             this.send(signal_1["default"].JOIN_FAILED);
         }
     };

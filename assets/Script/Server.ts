@@ -86,15 +86,15 @@ export default class Server extends cc.Component {
       case SERVER_EVENT.JOIN_SUCCESS:
         cc.director.emit(GAME_EVENT.GAME_JOINSUCCESS, result.data);
         break;
+      case SERVER_EVENT.JOIN_FAILED:
+        cc.director.emit(GAME_EVENT.GAME_JOINFAILED);
+        cc.error("加入游戏失败");
+        break;
       case SERVER_EVENT.LOGIN_FAILED:
         TipManager.Instance.showTips(ALLTIP.LOGIN_FAILED);
         this.scheduleOnce(() => {
           this._ws.close(CLOSE_CODE.LOGIN_FAILED);
         }, 1);
-        break;
-      case SERVER_EVENT.JOIN_FAILED:
-        TipManager.Instance.showTips(ALLTIP.INGAME);
-        cc.director.emit(GAME_EVENT.GAME_JOINFAILED);
         break;
       case SERVER_EVENT.MOVEMENT:
         cc.director.emit(GAME_EVENT.GAME_MOVEMENT, result.data);

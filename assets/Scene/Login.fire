@@ -641,10 +641,8 @@
     "_fontSize": 45,
     "_lineHeight": 45,
     "_enableWrapText": false,
-    "_N$file": {
-      "__uuid__": "98674031-e51a-45f1-a43f-6ded06f37b2c"
-    },
-    "_isSystemFontUsed": false,
+    "_N$file": null,
+    "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_batchAsBitmap": false,
     "_styleFlags": 0,
@@ -681,8 +679,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 200,
-      "height": 50.4
+      "width": 225,
+      "height": 56.7
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -735,16 +733,14 @@
     "_dstBlendFactor": 771,
     "_string": "请输入昵称",
     "_N$string": "请输入昵称",
-    "_fontSize": 40,
-    "_lineHeight": 40,
+    "_fontSize": 45,
+    "_lineHeight": 45,
     "_enableWrapText": false,
-    "_N$file": {
-      "__uuid__": "50ab95e6-500a-4a28-ae20-da0fb4f3666d"
-    },
-    "_isSystemFontUsed": false,
+    "_N$file": null,
+    "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_batchAsBitmap": false,
-    "_styleFlags": 0,
+    "_styleFlags": 1,
     "_underlineHeight": 0,
     "_N$horizontalAlign": 1,
     "_N$verticalAlign": 1,
@@ -943,7 +939,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 60,
+      "width": 0,
       "height": 50.4
     },
     "_anchorPoint": {

@@ -7,7 +7,7 @@ import ScrollingBg from "./ScrollingBg";
 import Server from "./Server";
 import TipManager from "./TipManager";
 import TopicBar from "./TopicBar";
-import { UIManager } from "./UI/UIManager";
+import { UIManager, UIType } from "./UI/UIManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -57,8 +57,6 @@ export default class Game extends BaseScene {
 
   _onGameStart(data) {
     this.unscheduleAllCallbacks();
-    this.topicBar.staticLabel.active = false;
-    this.topicBar.topicLabel.node.active = true;
     this._changeSelectBtnStatus("correct");
     this._updateContent(data);
   }
@@ -73,10 +71,12 @@ export default class Game extends BaseScene {
   }
 
   _updateContent(data) {
-    this.topicBar.node.active = true;
     this.footer.active = true;
-    this.topicBar.showTopicTip(true, data.curTitleId + 1);
     this.obstacleManager.clearObstacle();
+    this.topicBar.staticLabel.active = false;
+    this.topicBar.topicLabel.node.active = true;
+    this.topicBar.node.active = true;
+    this.topicBar.showTopicTip(true, data.curTitleId + 1);
     this.topicBar.updateTopicContent(
       data.curTitleId >= TITLES.length
         ? TITLES[TITLES.length - 1]
@@ -90,15 +90,12 @@ export default class Game extends BaseScene {
   }
 
   _onJoinSuccess(data) {
-    if (!GameData.playing) {
-      if (isSelfByName(data.joinPlayer.uname)) {
-        cc.log(`玩家: ${data.joinPlayer.uname}加入成功`);
-        GameData.playing = true;
-        this.scrollingBg.startScroll();
-        TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
-        UIManager.instance.hideAll();
-        this.topicBar.startMatchTime(data.matchTime);
-      }
+    if (isSelfByName(data.joinPlayer.uname)) {
+      cc.log(`玩家: ${data.joinPlayer.uname}加入成功`);
+      this.scrollingBg.startScroll();
+      TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
+      UIManager.instance.hideAll();
+      this.topicBar.startMatchTime(data.matchTime, () => {});
     }
 
     this._refreshOnlinePlayerLabel(data.playerList);
@@ -106,7 +103,8 @@ export default class Game extends BaseScene {
   }
 
   _onJoinFailed() {
-    UIManager.instance.hideAll();
+    // UIManager.instance.hideAll();
+    UIManager.instance.showUI(UIType.MainUI);
   }
 
   _onMovement(data) {
@@ -115,7 +113,6 @@ export default class Game extends BaseScene {
     });
   }
   _onLeave(data) {
-    GameData.playing = false;
     this._refreshOnlinePlayerLabel(data.playerList);
     this.playerManager.removePlayer(data.player);
   }
@@ -188,7 +185,6 @@ export default class Game extends BaseScene {
   }
   protected onLostConnection() {
     cc.error("游戏断线 清空数据");
-    GameData.playing = false;
     this._canChoose = true;
     super.onLostConnection();
   }

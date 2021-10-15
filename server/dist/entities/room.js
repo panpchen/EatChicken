@@ -5,12 +5,12 @@ var signal_1 = require("../enums/signal");
 var globalRoomList = [];
 // 房间最大人数
 var MAX_ROOT_MEMBER = 10;
-// 等待加入时间  ms
-var ADD_ROBOT_AFTER = 6000;
+// 匹配时间  ms
+var ADD_ROBOT_AFTER = 10000;
 // 答题游戏时间 ms
-var GAME_TIME = 3000;
+var GAME_TIME = 8000;
 // 总题目数
-var TOTAL_TITLE = 1000;
+var TOTAL_TITLE = 10;
 var nextRoomId = 0;
 /** 表示一个房间 */
 var Room = /** @class */ (function () {
@@ -35,11 +35,17 @@ var Room = /** @class */ (function () {
     Room.prototype.isGaming = function () {
         return this._isGaming;
     };
-    /** 添加编辑客户端到会话 */
     Room.prototype.addPlayer = function (player) {
         var _this = this;
-        // 有重复加入的不执行, 对于已经加入的玩家不会再创建一次
         console.log("\u73A9\u5BB6: " + player.user + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
+        // 对于已经加入的玩家不会再加入
+        var isRepeat = Object.values(this._players).some(function (p) {
+            return p && p.user.uname === player.user.uname;
+        });
+        if (isRepeat) {
+            console.log("玩家重复加入");
+            return false;
+        }
         if (this._index == -1) {
             this._index++;
             this._players[this._index] = player;
@@ -76,6 +82,7 @@ var Room = /** @class */ (function () {
             });
         });
         this._startMatchCountdown(this._playGame.bind(this));
+        return true;
         // setTimeout(() => {
         //   if (this.players.length < MAX_ROOT_MEMBER) {
         //     // const Robot = require("./robot").Robot;
@@ -92,7 +99,16 @@ var Room = /** @class */ (function () {
                 if (_this._curMatchTime <= 0) {
                     clearInterval(_this._interval);
                     _this._interval = null;
-                    callback && callback();
+                    var allPlayers = Object.values(_this._players).filter(function (p) {
+                        return p !== null;
+                    });
+                    if (allPlayers.length == 1) {
+                        _this.removePlayer(allPlayers[0]);
+                        allPlayers[0].send(signal_1["default"].JOIN_FAILED);
+                    }
+                    else {
+                        callback && callback();
+                    }
                 }
             }, 1000);
         }

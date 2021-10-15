@@ -1,5 +1,4 @@
 import signal from "../enums/signal";
-import { OBSTACLE_TYPE } from "./gameData";
 import Player from "./player";
 
 const globalRoomList: Room[] = [];
@@ -7,14 +6,14 @@ const globalRoomList: Room[] = [];
 // 房间最大人数
 const MAX_ROOT_MEMBER = 10;
 
-// 等待加入时间  ms
-const ADD_ROBOT_AFTER = 6000;
+// 匹配时间  ms
+const ADD_ROBOT_AFTER = 10000;
 
 // 答题游戏时间 ms
-const GAME_TIME = 3000;
+const GAME_TIME = 8000;
 
 // 总题目数
-const TOTAL_TITLE: number = 1000;
+const TOTAL_TITLE: number = 10;
 
 let nextRoomId = 0;
 
@@ -44,10 +43,17 @@ export class Room {
   public isGaming() {
     return this._isGaming;
   }
-  /** 添加编辑客户端到会话 */
   public addPlayer(player: Player) {
-    // 有重复加入的不执行, 对于已经加入的玩家不会再创建一次
     console.log(`玩家: ${player.user} | 进入房间号: ${this.id}`);
+    // 对于已经加入的玩家不会再加入
+    const isRepeat = Object.values<Player>(this._players).some((p) => {
+      return p && p.user.uname === player.user.uname;
+    });
+
+    if (isRepeat) {
+      console.log("玩家重复加入");
+      return false;
+    }
 
     if (this._index == -1) {
       this._index++;
@@ -90,6 +96,8 @@ export class Room {
 
     this._startMatchCountdown(this._playGame.bind(this));
 
+    return true;
+
     // setTimeout(() => {
     //   if (this.players.length < MAX_ROOT_MEMBER) {
     //     // const Robot = require("./robot").Robot;
@@ -106,7 +114,17 @@ export class Room {
         if (this._curMatchTime <= 0) {
           clearInterval(this._interval);
           this._interval = null;
-          callback && callback();
+          const allPlayers = Object.values<Player>(this._players).filter(
+            (p) => {
+              return p !== null;
+            }
+          );
+          if (allPlayers.length == 1) {
+            this.removePlayer(allPlayers[0]);
+            allPlayers[0].send(signal.JOIN_FAILED);
+          } else {
+            callback && callback();
+          }
         }
       }, 1000);
     }

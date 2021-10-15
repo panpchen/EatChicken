@@ -13,6 +13,9 @@ export default class Player {
   private _isAlive: boolean = false;
   private _pingInterval = null;
 
+  // private _loginPlayers: Player[] = [];
+  // private _joinPlayers: Player[] = [];
+
   constructor(ws: ws) {
     this._ws = ws;
     this.user = null;
@@ -38,12 +41,12 @@ export default class Player {
       switch (result.eventName) {
         case signal.HELLO:
           this.user = result.data.user as User;
-          if (Server.$.recordLoginPlayerToList(this)) {
-            this._startHeartBeat();
-            this.send(signal.HI);
-          } else {
+          if (Server.$.isRepeatLogin(this)) {
             console.log(`${this.user.uname} 重复登录, 登出另一个`);
             this.send(signal.LOGIN_FAILED);
+          } else {
+            this._startHeartBeat();
+            this.send(signal.HI);
           }
           break;
         case signal.JOIN:
@@ -69,19 +72,14 @@ export default class Player {
     });
 
     this._ws.on("error", (msg) => {
-      console.log("已断开连接： onError");
+      console.log("已断开连接：onError");
     });
 
     this._ws.on("close", (code: number, reason: string) => {
       console.log(`已断开连接: ${this.user.uname}`);
-      // 错误码: 4000:重复登录，登出
-      // 如何不是重复登录，不用删除
-      if (code !== 4000) {
-        Server.$.removeLoginPlayer(this);
-      }
-      Server.$.removeJoinPlayer(this);
       clearInterval(this._pingInterval);
       this._isAlive = false;
+      Server.$.removeClient(this);
       if (this._room) {
         this._room.removePlayer(this);
         this._room = null;
@@ -105,14 +103,12 @@ export default class Player {
 
       this._isAlive = false;
       this._ws.ping();
-    }, 10000); // 心跳检测间隔 15秒
+    }, 10000); // 心跳检测间隔
   }
 
   _ansJoin(result) {
-    if (Server.$.recordJoinPlayerToList(this)) {
-      this._room = Room.findRoomWithSeat() || Room.create();
-      this._room.addPlayer(this);
-    } else {
+    this._room = Room.findRoomWithSeat() || Room.create();
+    if (!this._room.addPlayer(this)) {
       this.send(signal.JOIN_FAILED);
     }
   }

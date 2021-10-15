@@ -37,7 +37,7 @@ export default class TopicBar extends cc.Component {
   }
 
   update() {
-    // 匹配时才显示大数字倒计时
+    // 匹配成功才显示大数字倒计时
     if (this._isMatching && this._countTime > 0 && this._countTime < 4) {
       this._onShowBigCountDownNum(true);
       this.bigCountDownTimeLabel.string = `${this._countTime}`;
@@ -50,9 +50,9 @@ export default class TopicBar extends cc.Component {
   _onShowBigCountDownNum(isShow: boolean) {
     this.bigCountDownTimeLabel.node.active = isShow;
   }
-  startMatchTime(time: number) {
+  startMatchTime(time: number, callback?: Function) {
     this._isMatching = true;
-    this._startCountDown(time, FontColorType.green);
+    this._startCountDown(time, FontColorType.green, callback);
   }
 
   startGameTime(time: number, callback?: Function) {

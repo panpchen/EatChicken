@@ -5,8 +5,8 @@ import * as fs from "fs";
 export default class Server {
   public static $: Server = null;
   public config: any = null;
-  private _loginPlayers: Player[] = []; // 记录登录过的玩家
-  private _joinPlayers: Player[] = []; // 记录加入游戏的玩家
+
+  private _clients: Player[] = [];
 
   constructor() {
     Server.$ = this;
@@ -28,6 +28,7 @@ export default class Server {
     wss.on("connection", (ws, req) => {
       console.log("已连接服务器 在线人数：", wss.clients.size);
       const player = new Player(ws);
+      this._clients.push(player);
       player.connect();
     });
   }
@@ -44,50 +45,22 @@ export default class Server {
     });
   }
 
-  recordLoginPlayerToList(player: Player): boolean {
-    const haveLogin = this._loginPlayers.some((p) => {
-      return p.user.uname === player.user.uname;
-    });
-
-    // 重复登录返回false
-    if (!haveLogin) {
-      this._loginPlayers.push(player);
-      return true;
+  isRepeatLogin(player: Player) {
+    let count = 0;
+    for (let i = 0; i < this._clients.length; i++) {
+      if (this._clients[i].user.uname == player.user.uname) {
+        count++;
+      }
     }
-
-    return false;
+    return count > 1;
   }
 
-  removeLoginPlayer(player: Player) {
-    const delIndex = this._loginPlayers.findIndex((p) => {
-      return p.user.uname === player.user.uname;
-    });
-
-    if (delIndex !== -1) {
-      this._loginPlayers.splice(delIndex, 1);
-    }
-  }
-
-  recordJoinPlayerToList(player: Player) {
-    const haveJoin = this._joinPlayers.some((p) => {
-      return p.user.uname === player.user.uname;
-    });
-
-    if (!haveJoin) {
-      this._joinPlayers.push(player);
-      return true;
-    }
-
-    return false;
-  }
-
-  removeJoinPlayer(player: Player) {
-    const delIndex = this._joinPlayers.findIndex((p) => {
-      return p.user.uname === player.user.uname;
-    });
-
-    if (delIndex !== -1) {
-      this._joinPlayers.splice(delIndex, 1);
+  removeClient(player: Player) {
+    for (let i = this._clients.length - 1; i >= 0; i--) {
+      if (this._clients[i].user.uname == player.user.uname) {
+        this._clients.splice(i, 1);
+        break;
+      }
     }
   }
 }

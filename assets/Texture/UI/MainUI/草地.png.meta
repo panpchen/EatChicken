@@ -1,6 +1,7 @@
 {
-  "ver": "2.3.5",
+  "ver": "2.3.7",
   "uuid": "8b36c489-c211-4810-8bc9-e02782120596",
+  "importer": "texture",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
@@ -12,8 +13,9 @@
   "platformSettings": {},
   "subMetas": {
     "草地": {
-      "ver": "1.0.4",
+      "ver": "1.0.6",
       "uuid": "3ee699d0-cd20-4ff5-90e0-0293fb976c8d",
+      "importer": "sprite-frame",
       "rawTextureUuid": "8b36c489-c211-4810-8bc9-e02782120596",
       "trimType": "auto",
       "trimThreshold": 1,
