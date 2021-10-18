@@ -105,6 +105,7 @@ export default class Game extends BaseScene {
   _onJoinFailed() {
     // UIManager.instance.hideAll();
     UIManager.instance.showUI(UIType.MainUI);
+    TipManager.Instance.showTips(ALLTIP.MATCH__NOTENOUGHPEOPLE);
   }
 
   _onMovement(data) {

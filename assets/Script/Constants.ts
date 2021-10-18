@@ -43,13 +43,14 @@ export enum ALLTIP {
   JOINING = "正在加入游戏...",
   JOINSUCCESS = "加入游戏成功",
   INGAME = "你已经在游戏中",
+  MATCH__NOTENOUGHPEOPLE = "匹配人数不足",
 }
 
 export const TITLES = ["题目1", "题目2", "题目3", "题目4"];
 
 export enum OBSTACLE_TYPE {
-  HOLE,
-  MAMMOTH,
+  HOLE = "无底洞",
+  MAMMOTH = "猛犸",
 }
 export interface IObstacle {
   type: OBSTACLE_TYPE;
@@ -61,5 +62,5 @@ export enum CLOSE_CODE {
   LOGIN_FAILED = 4000,
 }
 
-// export const ServerURl: string = `ws://192.168.19.147:2334`;
-export const ServerURl: string = `ws://localhost:2334`;
+export const ServerURl: string = `ws://192.168.19.240:2334`;
+// export const ServerURl: string = `ws://localhost:2334`;

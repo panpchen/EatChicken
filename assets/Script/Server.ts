@@ -103,11 +103,12 @@ export default class Server extends cc.Component {
   }
 
   _onError(event) {
+    cc.error("断开连接, 报错");
     this._onClose(event);
   }
 
   _onClose(event) {
-    cc.error("已断开连接！", event);
+    cc.error("断开连接！", event);
     this._isAlive = false;
     TipManager.Instance.showTips(ALLTIP.DISCONNECT);
     this._ws.removeEventListener("open", this._onOpen.bind(this));

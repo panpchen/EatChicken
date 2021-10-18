@@ -17,7 +17,6 @@ export default class ObstacleManager extends cc.Component {
   private _lastObstacle: cc.Node = null;
 
   createObstacle() {
-    cc.error("创建障碍");
     if (!this._lastObstacle) {
       this._lastObstacle = cc.instantiate(this.prefab);
       this._lastObstacle.parent = this.node;
