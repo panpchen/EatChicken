@@ -26,4 +26,8 @@ export default class Player extends cc.Component {
   getData() {
     return this._data;
   }
+
+  scaleToZero() {
+    cc.tween(this.node).to(0.5, { scale: 0 }, { easing: "smooth" }).start();
+  }
 }
