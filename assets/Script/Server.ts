@@ -90,6 +90,10 @@ export default class Server extends cc.Component {
         cc.director.emit(GAME_EVENT.GAME_JOINFAILED);
         cc.error("加入游戏失败");
         break;
+      case SERVER_EVENT.MATCH_FAILED:
+        cc.director.emit(GAME_EVENT.GAME_MATCHFAILED);
+        cc.error("匹配游戏失败");
+        break;
       case SERVER_EVENT.LOGIN_FAILED:
         TipManager.Instance.showTips(ALLTIP.LOGIN_FAILED);
         this.scheduleOnce(() => {

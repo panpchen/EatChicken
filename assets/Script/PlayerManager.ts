@@ -44,7 +44,7 @@ export default class PlayerManager extends cc.Component {
   }
 
   movePlayerToPosByIndex(data, callback?: Function) {
-    const player = this._getPlayerByName(data.playerName);
+    const player = this.getPlayerByName(data.playerName);
     const pos = this._getPosByIndex(data.targetIndex);
     if (player) {
       cc.tween(player.node)
@@ -58,7 +58,7 @@ export default class PlayerManager extends cc.Component {
     }
   }
 
-  _getPlayerByName(name: string) {
+  getPlayerByName(name: string): Player {
     for (let i = 0, len = this._allPlayers.length; i < len; i++) {
       if (this._allPlayers[i].getData().uname === name) {
         return this._allPlayers[i];
@@ -89,7 +89,7 @@ export default class PlayerManager extends cc.Component {
   }
   removePlayer(player: IPlayer) {
     cc.error("离开的玩家: ", player);
-    for (let i = 0, len = this._allPlayers.length; i < len; i++) {
+    for (let i = this._allPlayers.length - 1; i >= 0; i--) {
       const p = this._allPlayers[i];
       if (p.getData().uname === player.uname) {
         p.node.destroy();
@@ -97,5 +97,15 @@ export default class PlayerManager extends cc.Component {
         break;
       }
     }
+    cc.error("剩余玩家数：", this._allPlayers.length);
+  }
+
+  removeAllPlayer() {
+    for (let i = this._allPlayers.length - 1; i >= 0; i--) {
+      const p = this._allPlayers[i];
+      p.node.destroy();
+      this._allPlayers.splice(i, 1);
+    }
+    cc.error("所有剩余玩家数：", this._allPlayers.length);
   }
 }

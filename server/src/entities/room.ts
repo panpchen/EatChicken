@@ -121,7 +121,7 @@ export class Room {
           );
           if (allPlayers.length == 1) {
             this.removePlayer(allPlayers[0]);
-            allPlayers[0].send(signal.JOIN_FAILED);
+            allPlayers[0].send(signal.MATCH_FAILED);
           } else {
             callback && callback();
           }
@@ -145,13 +145,12 @@ export class Room {
     }, 1000);
   }
 
-  /** 从会话删除指定编辑客户端 */
   public removePlayer(removePlayer: Player) {
     console.log("离开的玩家", removePlayer.user.uname);
 
     // 不包含离开的玩家
     const allPlayers = Object.values<Player>(this._players).filter((p) => {
-      return p && p.user.uname !== removePlayer.user.uname;
+      return p && p.user.uname != removePlayer.user.uname;
     });
 
     const list = [];
@@ -162,7 +161,6 @@ export class Room {
     // 玩家离开通知所有其他玩家
     allPlayers.forEach((p) => {
       p.send(signal.LEAVE, {
-        // 过滤为null的player
         playerList: list,
         player: removePlayer.user,
       });
@@ -176,6 +174,11 @@ export class Room {
         break;
       }
     }
+
+    const len = Object.values<Player>(this._players).filter((p) => {
+      return p !== null;
+    }).length;
+    console.log("移除玩家后剩余玩家数： ", len);
 
     // 如果房间只剩一个人，此人离开则房间解散
     let isAllNull = true;
@@ -285,12 +288,12 @@ export class Room {
           curGameTime: this._curGameTime,
         });
         this._startGameCountdown(this._updateNextTitle.bind(this));
-      }, 4000);
+      }, 6000);
     }
   }
 
   private _finishGame() {
-    console.log("游戏结束");
+    console.log("全部游戏结束");
     this._isGaming = false;
     this._index = 0;
     this._curTitleId = 1;
@@ -299,7 +302,7 @@ export class Room {
     clearTimeout(this._timeOut);
     clearInterval(this._interval);
 
-    this._sendAll(signal.OVER);
+    // this._sendAll(signal.OVER);
     // const clients = this.clients;
     // for (let i = 0; i < MAX_ROOT_MEMBER; i++) {
     //   let player1 = clients[i];
@@ -353,5 +356,12 @@ export class Room {
     const room = new Room();
     globalRoomList.push(room);
     return room;
+  }
+
+  public ansGameOver(player: Player, playerName: string) {
+    console.log(`玩家${playerName} 游戏结束`);
+    this._sendAll(signal.OVER, { playerName: playerName });
+    // 服务端删除已结束的玩家
+    this.removePlayer(player);
   }
 }

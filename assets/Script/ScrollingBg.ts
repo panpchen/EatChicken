@@ -13,17 +13,13 @@ export default class ScrollingBg extends cc.Component {
   bgs: cc.Node[] = [];
   private _isScrolling: boolean = true;
   startScroll() {
-    cc.error("开始卷动");
     this._isScrolling = true;
   }
   stopScroll() {
-    cc.error("停止滚动");
     this._isScrolling = false;
   }
   update(dt) {
-    if (!this._isScrolling) {
-      return;
-    }
+    if (!this._isScrolling) return;
 
     this.bgs.forEach((bg) => {
       bg.y += 10;

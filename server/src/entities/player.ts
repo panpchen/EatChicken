@@ -68,6 +68,9 @@ export default class Player {
               break;
           }
           break;
+        case signal.OVER:
+          this._room.ansGameOver(this, result.data.playerName);
+          break;
       }
     });
 

@@ -1,6 +1,6 @@
 import BaseScene from "./BaseScene";
 import { ALLTIP, GAME_EVENT, SERVER_EVENT, TITLES } from "./Constants";
-import { GameChoice, GameData, isSelfByName, PlayerData } from "./GameData";
+import { GameChoice, isSelfByName, PlayerData } from "./GameData";
 import ObstacleManager from "./ObstacleManager";
 import PlayerManager from "./PlayerManager";
 import ScrollingBg from "./ScrollingBg";
@@ -29,11 +29,14 @@ export default class Game extends BaseScene {
   selectPic: cc.Node = null;
 
   private _canChoose: boolean = true;
+  public static instance: Game = null;
 
   onLoad() {
     super.onLoad();
+    Game.instance = this;
     cc.director.on(GAME_EVENT.GAME_JOINSUCCESS, this._onJoinSuccess, this);
     cc.director.on(GAME_EVENT.GAME_JOINFAILED, this._onJoinFailed, this);
+    cc.director.on(GAME_EVENT.GAME_MATCHFAILED, this._onMatchFailed, this);
     cc.director.on(GAME_EVENT.GAME_START, this._onGameStart, this);
     cc.director.on(GAME_EVENT.GAME_OVER, this._onGameOver, this);
     cc.director.on(GAME_EVENT.GAME_NEXT, this._onGameNext, this);
@@ -48,6 +51,7 @@ export default class Game extends BaseScene {
     super.onDestroy();
     cc.director.off(GAME_EVENT.GAME_JOINSUCCESS, this._onJoinSuccess, this);
     cc.director.off(GAME_EVENT.GAME_JOINFAILED, this._onJoinFailed, this);
+    cc.director.off(GAME_EVENT.GAME_MATCHFAILED, this._onMatchFailed, this);
     cc.director.off(GAME_EVENT.GAME_START, this._onGameStart, this);
     cc.director.off(GAME_EVENT.GAME_OVER, this._onGameOver, this);
     cc.director.off(GAME_EVENT.GAME_NEXT, this._onGameNext, this);
@@ -62,7 +66,9 @@ export default class Game extends BaseScene {
   }
 
   _onGameOver(data) {
-    cc.error("游戏结束");
+    if (PlayerData.uname != data.playerName) {
+      TipManager.Instance.showTips(`${data.playerName}玩家游戏结束`);
+    }
   }
 
   _onGameNext(data) {
@@ -103,9 +109,14 @@ export default class Game extends BaseScene {
   }
 
   _onJoinFailed() {
-    // UIManager.instance.hideAll();
+    this._reset();
+  }
+
+  _onMatchFailed() {
     UIManager.instance.showUI(UIType.MainUI);
     TipManager.Instance.showTips(ALLTIP.MATCH__NOTENOUGHPEOPLE);
+    this.playerManager.removeAllPlayer();
+    this._reset();
   }
 
   _onMovement(data) {
@@ -185,8 +196,12 @@ export default class Game extends BaseScene {
     wrongBtn.interactable = parm !== "wrong";
   }
   protected onLostConnection() {
+    this._reset();
+    super.onLostConnection();
+  }
+
+  _reset() {
     cc.error("游戏断线 清空数据");
     this._canChoose = true;
-    super.onLostConnection();
   }
 }

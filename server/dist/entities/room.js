@@ -104,7 +104,7 @@ var Room = /** @class */ (function () {
                     });
                     if (allPlayers.length == 1) {
                         _this.removePlayer(allPlayers[0]);
-                        allPlayers[0].send(signal_1["default"].JOIN_FAILED);
+                        allPlayers[0].send(signal_1["default"].MATCH_FAILED);
                     }
                     else {
                         callback && callback();
@@ -129,12 +129,11 @@ var Room = /** @class */ (function () {
             }
         }, 1000);
     };
-    /** 从会话删除指定编辑客户端 */
     Room.prototype.removePlayer = function (removePlayer) {
         console.log("离开的玩家", removePlayer.user.uname);
         // 不包含离开的玩家
         var allPlayers = Object.values(this._players).filter(function (p) {
-            return p && p.user.uname !== removePlayer.user.uname;
+            return p && p.user.uname != removePlayer.user.uname;
         });
         var list = [];
         allPlayers.forEach(function (p) {
@@ -143,7 +142,6 @@ var Room = /** @class */ (function () {
         // 玩家离开通知所有其他玩家
         allPlayers.forEach(function (p) {
             p.send(signal_1["default"].LEAVE, {
-                // 过滤为null的player
                 playerList: list,
                 player: removePlayer.user
             });
@@ -156,6 +154,10 @@ var Room = /** @class */ (function () {
                 break;
             }
         }
+        var len = Object.values(this._players).filter(function (p) {
+            return p !== null;
+        }).length;
+        console.log("移除玩家后剩余玩家数： ", len);
         // 如果房间只剩一个人，此人离开则房间解散
         var isAllNull = true;
         for (var key in this._players) {
@@ -255,11 +257,11 @@ var Room = /** @class */ (function () {
                     curGameTime: _this._curGameTime
                 });
                 _this._startGameCountdown(_this._updateNextTitle.bind(_this));
-            }, 4000);
+            }, 6000);
         }
     };
     Room.prototype._finishGame = function () {
-        console.log("游戏结束");
+        console.log("全部游戏结束");
         this._isGaming = false;
         this._index = 0;
         this._curTitleId = 1;
@@ -267,7 +269,7 @@ var Room = /** @class */ (function () {
         this._curGameTime = GAME_TIME;
         clearTimeout(this._timeOut);
         clearInterval(this._interval);
-        this._sendAll(signal_1["default"].OVER);
+        // this._sendAll(signal.OVER);
         // const clients = this.clients;
         // for (let i = 0; i < MAX_ROOT_MEMBER; i++) {
         //   let player1 = clients[i];
@@ -319,6 +321,12 @@ var Room = /** @class */ (function () {
         var room = new Room();
         globalRoomList.push(room);
         return room;
+    };
+    Room.prototype.ansGameOver = function (player, playerName) {
+        console.log("\u73A9\u5BB6" + playerName + " \u6E38\u620F\u7ED3\u675F");
+        this._sendAll(signal_1["default"].OVER, { playerName: playerName });
+        // 服务端删除已结束的玩家
+        this.removePlayer(player);
     };
     return Room;
 }());

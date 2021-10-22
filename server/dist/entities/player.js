@@ -62,6 +62,9 @@ var Player = /** @class */ (function () {
                             break;
                     }
                     break;
+                case signal_1["default"].OVER:
+                    _this._room.ansGameOver(_this, result.data.playerName);
+                    break;
             }
         });
         this._ws.on("error", function (msg) {

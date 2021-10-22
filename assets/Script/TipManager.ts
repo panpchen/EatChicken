@@ -20,11 +20,11 @@ export default class TipManager extends cc.Component {
     TipManager.Instance = this;
   }
 
-  showTips(content) {
+  showTips(str: string) {
     if (!this._tip || !cc.isValid(this._tip)) {
       this._tip = cc.instantiate(this.tipPrefab);
     }
     this._tip.parent = cc.director.getScene();
-    this._tip.getComponent(Tip).setContent(content);
+    this._tip.getComponent(Tip).setContent(str);
   }
 }

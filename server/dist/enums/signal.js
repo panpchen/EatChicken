@@ -6,6 +6,7 @@ exports["default"] = {
     JOIN: "JOIN",
     JOIN_SUCCESS: "JOIN_SUCCESS",
     JOIN_FAILED: "JOIN_FAILED",
+    MATCH_FAILED: "MATCH_FAILED",
     START: "START",
     NEXT: "NEXT",
     LEAVE: "LEAVE",
