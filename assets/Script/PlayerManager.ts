@@ -30,7 +30,7 @@ export default class PlayerManager extends cc.Component {
       const player = cc.instantiate(this.prefab).getComponent(Player);
       const pData: IPlayer = players[i];
       if (isSelfByName(pData.uname)) {
-        PlayerData.uindex = pData.uindex;
+        PlayerData.uIndex = pData.uIndex;
       }
       player.init(pData);
       player.node.parent = this.node;
@@ -38,7 +38,7 @@ export default class PlayerManager extends cc.Component {
       player.node.setSiblingIndex(0);
       player.node.setPosition(cc.v2(-400, 640));
       cc.tween(player.node)
-        .to(1, { position: this._getPosByIndex(pData.uindex) })
+        .to(1, { position: this._getPosByIndex(pData.uIndex) })
         .start();
     }
   }

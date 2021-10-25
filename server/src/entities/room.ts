@@ -43,11 +43,11 @@ export class Room {
   public isGaming() {
     return this._isGaming;
   }
-  public addPlayer(player: Player) {
-    console.log(`玩家: ${player.user} | 进入房间号: ${this.id}`);
+  public addPlayer(joinPlayer: Player) {
+    console.log(`玩家: ${joinPlayer.user} | 进入房间号: ${this.id}`);
     // 对于已经加入的玩家不会再加入
     const isRepeat = Object.values<Player>(this._players).some((p) => {
-      return p && p.user.uname === player.user.uname;
+      return p && p.user.uname === joinPlayer.user.uname;
     });
 
     if (isRepeat) {
@@ -57,14 +57,14 @@ export class Room {
 
     if (this._index == -1) {
       this._index++;
-      this._players[this._index] = player;
-      player.user.uindex = this._index;
+      this._players[this._index] = joinPlayer;
+      joinPlayer.user.uIndex = this._index;
     } else {
       let haveEmpty = false;
       for (let key in this._players) {
         if (this._players[key] === null) {
-          this._players[key] = player;
-          player.user.uindex = Number(key);
+          this._players[key] = joinPlayer;
+          joinPlayer.user.uIndex = Number(key);
           haveEmpty = true;
           break;
         }
@@ -72,8 +72,8 @@ export class Room {
 
       if (!haveEmpty) {
         this._index++;
-        this._players[this._index] = player;
-        player.user.uindex = this._index;
+        this._players[this._index] = joinPlayer;
+        joinPlayer.user.uIndex = this._index;
       }
     }
 
@@ -89,7 +89,7 @@ export class Room {
     allPlayers.forEach((p) => {
       p.send(signal.JOIN_SUCCESS, {
         playerList: list,
-        joinPlayer: p.user,
+        joinPlayer: joinPlayer.user,
         matchTime: this._curMatchTime,
       });
     });
@@ -234,8 +234,8 @@ export class Room {
   _setPlayerIndex(playerName: string, tarIndex: number) {
     const p = this._getPlayerByName(playerName);
     if (p) {
-      this._players[p.user.uindex] = null;
-      p.user.uindex = tarIndex;
+      this._players[p.user.uIndex] = null;
+      p.user.uIndex = tarIndex;
       this._players[tarIndex] = p;
     }
   }

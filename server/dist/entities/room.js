@@ -35,12 +35,12 @@ var Room = /** @class */ (function () {
     Room.prototype.isGaming = function () {
         return this._isGaming;
     };
-    Room.prototype.addPlayer = function (player) {
+    Room.prototype.addPlayer = function (joinPlayer) {
         var _this = this;
-        console.log("\u73A9\u5BB6: " + player.user + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
+        console.log("\u73A9\u5BB6: " + joinPlayer.user + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
         // 对于已经加入的玩家不会再加入
         var isRepeat = Object.values(this._players).some(function (p) {
-            return p && p.user.uname === player.user.uname;
+            return p && p.user.uname === joinPlayer.user.uname;
         });
         if (isRepeat) {
             console.log("玩家重复加入");
@@ -48,23 +48,23 @@ var Room = /** @class */ (function () {
         }
         if (this._index == -1) {
             this._index++;
-            this._players[this._index] = player;
-            player.user.uindex = this._index;
+            this._players[this._index] = joinPlayer;
+            joinPlayer.user.uIndex = this._index;
         }
         else {
             var haveEmpty = false;
             for (var key in this._players) {
                 if (this._players[key] === null) {
-                    this._players[key] = player;
-                    player.user.uindex = Number(key);
+                    this._players[key] = joinPlayer;
+                    joinPlayer.user.uIndex = Number(key);
                     haveEmpty = true;
                     break;
                 }
             }
             if (!haveEmpty) {
                 this._index++;
-                this._players[this._index] = player;
-                player.user.uindex = this._index;
+                this._players[this._index] = joinPlayer;
+                joinPlayer.user.uIndex = this._index;
             }
         }
         var allPlayers = Object.values(this._players).filter(function (p) {
@@ -77,7 +77,7 @@ var Room = /** @class */ (function () {
         allPlayers.forEach(function (p) {
             p.send(signal_1["default"].JOIN_SUCCESS, {
                 playerList: list,
-                joinPlayer: p.user,
+                joinPlayer: joinPlayer.user,
                 matchTime: _this._curMatchTime
             });
         });
@@ -206,8 +206,8 @@ var Room = /** @class */ (function () {
     Room.prototype._setPlayerIndex = function (playerName, tarIndex) {
         var p = this._getPlayerByName(playerName);
         if (p) {
-            this._players[p.user.uindex] = null;
-            p.user.uindex = tarIndex;
+            this._players[p.user.uIndex] = null;
+            p.user.uIndex = tarIndex;
             this._players[tarIndex] = p;
         }
     };

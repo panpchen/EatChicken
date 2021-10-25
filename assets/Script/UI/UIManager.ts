@@ -23,8 +23,6 @@ export class UIManager extends cc.Component {
   allUI: cc.Node[] = [];
   @property(cc.Node)
   fadeMask: cc.Node = null;
-  @property(cc.Node)
-  UIParent: cc.Node = null;
   @property(cc.Widget)
   UIParentWidget: cc.Widget = null;
 

@@ -1,18 +1,18 @@
 export interface IPlayer {
   uid: string;
   uname: string;
-  uindex: number;
+  uIndex: number;
 }
 
 // 玩家自己信息
 export const PlayerData: IPlayer = {
   uid: "",
   uname: "",
-  uindex: -1,
+  uIndex: -1,
 };
 
 export function isSelfByName(uname: string) {
-  return PlayerData.uname === uname;
+  return PlayerData.uname == uname;
 }
 
 export enum GameChoice {
