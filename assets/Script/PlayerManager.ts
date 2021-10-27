@@ -5,7 +5,7 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { IPlayer, isSelfByName, PlayerData } from "./GameData";
+import { IPlayer, isSelf, PlayerData } from "./GameData";
 import Player from "./Player";
 
 const { ccclass, property } = cc._decorator;
@@ -16,10 +16,21 @@ export default class PlayerManager extends cc.Component {
   prefab: cc.Prefab = null;
 
   private _allPlayers: Player[] = [];
+
+  update() {
+    for (let i = 0; i < this._allPlayers.length; i++) {
+      if (this._allPlayers[i].remove) {
+        this._allPlayers[i].node.destroy();
+        this._allPlayers.splice(i, 1);
+        break;
+      }
+    }
+  }
+
   createPlayer(players) {
     for (let i = players.length - 1; i >= 0; i--) {
       for (let j = this._allPlayers.length - 1; j >= 0; j--) {
-        if (players[i].uname === this._allPlayers[j].getData().uname) {
+        if (players[i].uname == this._allPlayers[j].getData().uname) {
           players.splice(i, 1);
           break;
         }
@@ -29,7 +40,7 @@ export default class PlayerManager extends cc.Component {
     for (let i = 0, len = players.length; i < len; i++) {
       const player = cc.instantiate(this.prefab).getComponent(Player);
       const pData: IPlayer = players[i];
-      if (isSelfByName(pData.uname)) {
+      if (isSelf(pData.uname)) {
         PlayerData.uIndex = pData.uIndex;
       }
       player.init(pData);
@@ -60,11 +71,15 @@ export default class PlayerManager extends cc.Component {
 
   getPlayerByName(name: string): Player {
     for (let i = 0, len = this._allPlayers.length; i < len; i++) {
-      if (this._allPlayers[i].getData().uname === name) {
+      if (this._allPlayers[i].getData().uname == name) {
         return this._allPlayers[i];
       }
     }
     return null;
+  }
+
+  getSelf() {
+    return this.getPlayerByName(PlayerData.uname);
   }
 
   // 通过key获取对应坐标 L1,L2,R1,R2
@@ -87,25 +102,35 @@ export default class PlayerManager extends cc.Component {
     }
     return newPos;
   }
-  removePlayer(player: IPlayer) {
-    cc.error("离开的玩家: ", player);
+
+  moveOutside(callback?: Function) {
+    this._allPlayers.forEach((p) => {
+      p.moveOutSide();
+    });
+    callback && callback();
+  }
+
+  removePlayer(playerName: string) {
+    cc.error("离开的玩家: ", playerName);
     for (let i = this._allPlayers.length - 1; i >= 0; i--) {
       const p = this._allPlayers[i];
-      if (p.getData().uname === player.uname) {
-        p.node.destroy();
-        this._allPlayers.splice(i, 1);
+      if (p.getData().uname == playerName) {
+        // p.node.destroy();
+        // this._allPlayers.splice(i, 1);
+        p.remove = true;
         break;
       }
     }
-    cc.error("剩余玩家数：", this._allPlayers.length);
+    // cc.error("剩余玩家数：", this._allPlayers.length);
   }
 
   removeAllPlayer() {
     for (let i = this._allPlayers.length - 1; i >= 0; i--) {
       const p = this._allPlayers[i];
-      p.node.destroy();
-      this._allPlayers.splice(i, 1);
+      // p.node.destroy();
+      // this._allPlayers.splice(i, 1);
+      p.remove = true;
     }
-    cc.error("所有剩余玩家数：", this._allPlayers.length);
+    // cc.error("剩余玩家数：", this._allPlayers.length);
   }
 }

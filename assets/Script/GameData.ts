@@ -11,18 +11,18 @@ export const PlayerData: IPlayer = {
   uIndex: -1,
 };
 
-export function isSelfByName(uname: string) {
+export function isSelf(uname: string) {
   return PlayerData.uname == uname;
 }
 
 export enum GameChoice {
-  correct = 0,
-  wrong = 1,
+  yes = 0,
+  no = 1,
 }
 
 export const GameData = {
   playing: false,
-  gameChoice: GameChoice.correct,
+  gameChoice: GameChoice.yes,
   totalScore: 0,
   totalCoin: 0,
 };

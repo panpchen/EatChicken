@@ -1,6 +1,6 @@
 import BaseScene from "./BaseScene";
 import { ALLTIP, GAME_EVENT, SERVER_EVENT, TITLES } from "./Constants";
-import { GameChoice, isSelfByName, PlayerData } from "./GameData";
+import { GameChoice, isSelf, PlayerData } from "./GameData";
 import ObstacleManager from "./ObstacleManager";
 import PlayerManager from "./PlayerManager";
 import ScrollingBg from "./ScrollingBg";
@@ -44,6 +44,7 @@ export default class Game extends BaseScene {
     cc.director.on(GAME_EVENT.GAME_MOVEMENT, this._onMovement, this);
     this.footer.active = false;
     this.selectPic.opacity = 0;
+    this._changeSelectBtnStatus("yes");
     this.topicBar.init();
   }
 
@@ -59,20 +60,29 @@ export default class Game extends BaseScene {
     cc.director.off(GAME_EVENT.GAME_MOVEMENT, this._onMovement, this);
   }
 
-  _onGameStart(data) {
-    this.unscheduleAllCallbacks();
-    this._changeSelectBtnStatus("correct");
-    this._updateContent(data);
-  }
+  _onGameStart(data) {}
 
   _onGameOver(data) {
     if (PlayerData.uname != data.playerName) {
       TipManager.Instance.showTips(`${data.playerName}玩家游戏结束`);
+      return;
     }
+
+    this.scheduleOnce(() => {
+      this.scrollingBg.stopScroll();
+      this.playerManager.moveOutside(() => {
+        this.scheduleOnce(() => {
+          UIManager.instance.showUI(UIType.MainUI);
+        }, 2);
+      });
+    }, 3);
+
+    this.playerManager.removePlayer(data.playerName);
+    this._reset();
   }
 
   _onGameNext(data) {
-    cc.error("更新下一题: ", data);
+    cc.error("更新题目和障碍物配置: ", data);
     this._updateContent(data);
   }
 
@@ -83,20 +93,20 @@ export default class Game extends BaseScene {
     this.topicBar.topicLabel.node.active = true;
     this.topicBar.node.active = true;
     this.topicBar.showTopicTip(true, data.curTitleId + 1);
-    this.topicBar.updateTopicContent(
+    const titleOb =
       data.curTitleId >= TITLES.length
         ? TITLES[TITLES.length - 1]
-        : TITLES[data.curTitleId]
-    );
+        : TITLES[data.curTitleId];
+    this.topicBar.updateTopicContent(titleOb);
     this.topicBar.startGameTime(data.curGameTime, () => {
       this.topicBar.node.active = false;
       this.footer.active = false;
-      this.obstacleManager.createObstacle();
+      this.obstacleManager.createObstacle(titleOb.answer, data.curObstacle);
     });
   }
 
   _onJoinSuccess(data) {
-    if (isSelfByName(data.joinPlayer.uname)) {
+    if (isSelf(data.joinPlayer.uname)) {
       cc.log(`玩家: ${data.joinPlayer.uname}加入成功`);
       this.scrollingBg.startScroll();
       TipManager.Instance.showTips(ALLTIP.JOINSUCCESS);
@@ -126,7 +136,7 @@ export default class Game extends BaseScene {
   }
   _onLeave(data) {
     this._refreshOnlinePlayerLabel(data.playerList);
-    this.playerManager.removePlayer(data.player);
+    this.playerManager.removePlayer(data.player.uname);
   }
 
   _refreshOnlinePlayerLabel(players) {
@@ -149,17 +159,17 @@ export default class Game extends BaseScene {
     this._canChoose = false;
 
     switch (parm) {
-      case "correct":
+      case "yes":
         this._changeSelectBtnStatus(parm);
         Server.Instance.send(SERVER_EVENT.CHOICE, {
-          choice: GameChoice.correct,
+          choice: GameChoice.yes,
           playerName: PlayerData.uname,
         });
         break;
-      case "wrong":
+      case "no":
         this._changeSelectBtnStatus(parm);
         Server.Instance.send(SERVER_EVENT.CHOICE, {
-          choice: GameChoice.wrong,
+          choice: GameChoice.no,
           playerName: PlayerData.uname,
         });
         break;
@@ -183,17 +193,17 @@ export default class Game extends BaseScene {
       .start();
   }
   _changeSelectBtnStatus(parm: string) {
-    this._showSelectPic(parm === "correct" ? -190 : 200);
+    this._showSelectPic(parm === "yes" ? -190 : 200);
 
     const correctBtn = this.footer
-      .getChildByName("correctBtn")
+      .getChildByName("yesBtn")
       .getComponent(cc.Button);
-    correctBtn.interactable = parm !== "correct";
+    correctBtn.interactable = parm !== "yes";
 
     const wrongBtn = this.footer
-      .getChildByName("wrongBtn")
+      .getChildByName("noBtn")
       .getComponent(cc.Button);
-    wrongBtn.interactable = parm !== "wrong";
+    wrongBtn.interactable = parm !== "no";
   }
   protected onLostConnection() {
     this._reset();

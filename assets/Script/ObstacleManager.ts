@@ -5,9 +5,8 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { IObstacle, OBSTACLE_TYPE } from "./Constants";
+import { IObstacle } from "./Constants";
 import Obstacle from "./Obstacle";
-import { Utils } from "./Utils";
 
 const { ccclass, property } = cc._decorator;
 
@@ -16,21 +15,15 @@ export default class ObstacleManager extends cc.Component {
   @property(cc.Prefab) prefab: cc.Prefab = null;
   private _lastObstacle: cc.Node = null;
 
-  createObstacle() {
+  createObstacle(dir: string, obstacle: IObstacle) {
     if (!this._lastObstacle) {
       this._lastObstacle = cc.instantiate(this.prefab);
       this._lastObstacle.parent = this.node;
-      this._lastObstacle.setPosition(cc.v2(200, -cc.winSize.height));
-      let type = Utils.getRangeRandom(0, 1);
-      let data: IObstacle = { type: OBSTACLE_TYPE.HOLE, speed: 0 };
-      if (type < 0.4) {
-        data.type = OBSTACLE_TYPE.HOLE;
-        data.speed = 10;
-      } else {
-        type = OBSTACLE_TYPE.MAMMOTH;
-        data.speed = 10;
-      }
-      this._lastObstacle.getComponent(Obstacle).init(data);
+      const x = dir == "yes" ? -200 : 200;
+      const scaleX = dir == "yes" ? -1 : 1;
+      this._lastObstacle.setPosition(cc.v2(x, -cc.winSize.height));
+      this._lastObstacle.scaleX = scaleX;
+      this._lastObstacle.getComponent(Obstacle).init(obstacle);
     }
   }
   clearObstacle() {

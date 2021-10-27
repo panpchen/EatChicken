@@ -48,7 +48,19 @@ export enum ALLTIP {
   MATCH__NOTENOUGHPEOPLE = "匹配人数不足",
 }
 
-export const TITLES = ["题目1", "题目2", "题目3", "题目4"];
+export interface ITitle {
+  title: string;
+  answer: string;
+}
+export const TITLES: ITitle[] = [
+  {
+    title: "西瓜的肉是红色吗?",
+    answer: "yes",
+  },
+  { title: "苹果的肉是紫色吗?", answer: "no" },
+  { title: "1+1=2?", answer: "yes" },
+  { title: "2x4=9?", answer: "no" },
+];
 
 export enum OBSTACLE_TYPE {
   HOLE = "无底洞",
@@ -57,6 +69,7 @@ export enum OBSTACLE_TYPE {
 export interface IObstacle {
   type: OBSTACLE_TYPE;
   speed: number;
+  ran: number;
 }
 
 // 服务器断线原因

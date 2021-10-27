@@ -1,7 +1,9 @@
 "use strict";
 exports.__esModule = true;
 exports.Room = void 0;
+var utils_1 = require("../utils/utils");
 var signal_1 = require("../enums/signal");
+var gameData_1 = require("./gameData");
 var globalRoomList = [];
 // 房间最大人数
 var MAX_ROOT_MEMBER = 10;
@@ -38,12 +40,12 @@ var Room = /** @class */ (function () {
     Room.prototype.addPlayer = function (joinPlayer) {
         var _this = this;
         console.log("\u73A9\u5BB6: " + joinPlayer.user + " | \u8FDB\u5165\u623F\u95F4\u53F7: " + this.id);
-        // 对于已经加入的玩家不会再加入
+        // 不能重复加入
         var isRepeat = Object.values(this._players).some(function (p) {
             return p && p.user.uname === joinPlayer.user.uname;
         });
         if (isRepeat) {
-            console.log("玩家重复加入");
+            console.log("玩家已加入房间");
             return false;
         }
         if (this._index == -1) {
@@ -224,11 +226,28 @@ var Room = /** @class */ (function () {
         return Object.values(this._players).length == MAX_ROOT_MEMBER;
     };
     Room.prototype._playGame = function () {
-        console.log("游戏开始");
         this._isGaming = true;
-        this._sendAll(signal_1["default"].START, {
-            curGameTime: this._curGameTime,
-            curTitleId: this._curTitleId
+        var tarObstacle = null;
+        var tarRan = utils_1["default"].getRangeRandom(0, 1);
+        var listRan = [];
+        for (var i = 0; i < gameData_1.Obstacles.length; i++) {
+            listRan.push(gameData_1.Obstacles[i].ran);
+        }
+        var tarRanNum = Number(tarRan.toFixed(1));
+        console.error("障碍物随机数： ", tarRanNum);
+        listRan.push(tarRanNum);
+        listRan.sort();
+        var index = listRan.indexOf(tarRanNum);
+        tarObstacle = gameData_1.Obstacles[Math.min(index, gameData_1.Obstacles.length - 1)];
+        if (!tarObstacle) {
+            console.error("障碍物为空");
+            return;
+        }
+        console.log("障碍物信息: ", tarObstacle);
+        this._sendAll(signal_1["default"].NEXT, {
+            curGameTime: GAME_TIME,
+            curTitleId: this._curTitleId,
+            curObstacle: tarObstacle
         });
         // 每题答题时间到了刷新题目
         this._startGameCountdown(this._updateNextTitle.bind(this));
@@ -252,11 +271,7 @@ var Room = /** @class */ (function () {
             this._timeOut = setTimeout(function () {
                 console.log("显示题目： ", _this._curTitleId + 1);
                 _this._curGameTime = GAME_TIME;
-                _this._sendAll(signal_1["default"].NEXT, {
-                    curTitleId: _this._curTitleId,
-                    curGameTime: _this._curGameTime
-                });
-                _this._startGameCountdown(_this._updateNextTitle.bind(_this));
+                _this._playGame();
             }, 6000);
         }
     };

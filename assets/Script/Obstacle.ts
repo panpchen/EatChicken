@@ -5,10 +5,11 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { IObstacle, OBSTACLE_TYPE } from "./Constants";
+import { IObstacle, SERVER_EVENT } from "./Constants";
 import Game from "./Game";
 import { PlayerData } from "./GameData";
 import Player from "./Player";
+import Server from "./Server";
 
 const { ccclass, property } = cc._decorator;
 
@@ -41,13 +42,17 @@ export default class Obstacle extends cc.Component {
       ) {
         const player = p.getComponent(Player);
         if (player.getData().uname == PlayerData.uname) {
-          player.scaleToZero();
+          player.scaleToZero(() => {
+            Server.Instance.send(SERVER_EVENT.OVER, {
+              playerName: player.getData().uname,
+            });
+          });
         }
       }
     }
 
     if (this.node.y - this.node.height / 2 > cc.winSize.height) {
-      cc.error("销毁障碍");
+      cc.error("障碍超出边界销毁");
       this.node.destroy();
     }
   }

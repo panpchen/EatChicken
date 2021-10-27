@@ -5,6 +5,8 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+import { ITitle } from "./Constants";
+
 const { ccclass, property } = cc._decorator;
 export const enum FontColorType {
   green,
@@ -101,9 +103,9 @@ export default class TopicBar extends cc.Component {
     }
   }
 
-  updateTopicContent(str: string) {
-    if (str) {
-      this.topicLabel.string = str;
+  updateTopicContent(data: ITitle) {
+    if (data.title.trim()) {
+      this.topicLabel.string = data.title;
     }
   }
 

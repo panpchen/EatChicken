@@ -1,4 +1,6 @@
+import utils from "../utils/utils";
 import signal from "../enums/signal";
+import { IObstacle, Obstacles } from "./gameData";
 import Player from "./player";
 
 const globalRoomList: Room[] = [];
@@ -45,13 +47,13 @@ export class Room {
   }
   public addPlayer(joinPlayer: Player) {
     console.log(`玩家: ${joinPlayer.user} | 进入房间号: ${this.id}`);
-    // 对于已经加入的玩家不会再加入
+    // 不能重复加入
     const isRepeat = Object.values<Player>(this._players).some((p) => {
       return p && p.user.uname === joinPlayer.user.uname;
     });
 
     if (isRepeat) {
-      console.log("玩家重复加入");
+      console.log("玩家已加入房间");
       return false;
     }
 
@@ -254,11 +256,33 @@ export class Room {
   }
 
   private _playGame() {
-    console.log("游戏开始");
     this._isGaming = true;
-    this._sendAll(signal.START, {
-      curGameTime: this._curGameTime,
+    let tarObstacle: IObstacle = null;
+    let tarRan = utils.getRangeRandom(0, 1);
+    let listRan = [];
+    for (let i = 0; i < Obstacles.length; i++) {
+      listRan.push(Obstacles[i].ran);
+    }
+
+    let tarRanNum = Number(tarRan.toFixed(1));
+    console.error("障碍物随机数： ", tarRanNum);
+    listRan.push(tarRanNum);
+    listRan.sort();
+
+    let index = listRan.indexOf(tarRanNum);
+    tarObstacle = Obstacles[Math.min(index, Obstacles.length - 1)];
+
+    if (!tarObstacle) {
+      console.error("障碍物为空");
+      return;
+    }
+
+    console.log("障碍物信息: ", tarObstacle);
+
+    this._sendAll(signal.NEXT, {
+      curGameTime: GAME_TIME,
       curTitleId: this._curTitleId,
+      curObstacle: tarObstacle,
     });
 
     // 每题答题时间到了刷新题目
@@ -283,14 +307,12 @@ export class Room {
       this._timeOut = setTimeout(() => {
         console.log("显示题目： ", this._curTitleId + 1);
         this._curGameTime = GAME_TIME;
-        this._sendAll(signal.NEXT, {
-          curTitleId: this._curTitleId,
-          curGameTime: this._curGameTime,
-        });
-        this._startGameCountdown(this._updateNextTitle.bind(this));
+        this._playGame();
       }, 6000);
     }
   }
+
+  private _;
 
   private _finishGame() {
     console.log("全部游戏结束");

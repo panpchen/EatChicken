@@ -5,8 +5,6 @@ var room_1 = require("./room");
 var signal_1 = require("../enums/signal");
 var server_1 = require("../server");
 var Player = /** @class */ (function () {
-    // private _loginPlayers: Player[] = [];
-    // private _joinPlayers: Player[] = [];
     function Player(ws) {
         this._ws = null;
         this.user = null;
@@ -18,7 +16,7 @@ var Player = /** @class */ (function () {
         this._ws = ws;
         this.user = null;
         this.gameData = {
-            gameChoice: gameData_1.GameChoice.correct,
+            gameChoice: gameData_1.GameChoice.yes,
             totalScore: 0,
             totalCoin: 0
         };
@@ -51,11 +49,11 @@ var Player = /** @class */ (function () {
                     break;
                 case signal_1["default"].CHOICE:
                     switch (result.data.choice) {
-                        case gameData_1.GameChoice.correct:
+                        case gameData_1.GameChoice.yes:
                             _this._room && _this._room.movePlayerToLeft(result.data.playerName);
                             console.log("玩家选择对的");
                             break;
-                        case gameData_1.GameChoice.wrong:
+                        case gameData_1.GameChoice.no:
                             _this._room &&
                                 _this._room.movePlayerToRight(result.data.playerName);
                             console.log("玩家选择错的");

@@ -69,7 +69,6 @@ export default class Server extends cc.Component {
         cc.director.emit(GAME_EVENT.GAME_START, result.data);
         break;
       case SERVER_EVENT.NEXT:
-        cc.log("响应服务器下一题");
         cc.director.emit(GAME_EVENT.GAME_NEXT, result.data);
         break;
       case SERVER_EVENT.OVER:

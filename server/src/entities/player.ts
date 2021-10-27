@@ -13,14 +13,11 @@ export default class Player {
   private _isAlive: boolean = false;
   private _pingInterval = null;
 
-  // private _loginPlayers: Player[] = [];
-  // private _joinPlayers: Player[] = [];
-
   constructor(ws: ws) {
     this._ws = ws;
     this.user = null;
     this.gameData = {
-      gameChoice: GameChoice.correct,
+      gameChoice: GameChoice.yes,
       totalScore: 0,
       totalCoin: 0,
     };
@@ -57,11 +54,11 @@ export default class Player {
           break;
         case signal.CHOICE:
           switch (result.data.choice) {
-            case GameChoice.correct:
+            case GameChoice.yes:
               this._room && this._room.movePlayerToLeft(result.data.playerName);
               console.log("玩家选择对的");
               break;
-            case GameChoice.wrong:
+            case GameChoice.no:
               this._room &&
                 this._room.movePlayerToRight(result.data.playerName);
               console.log("玩家选择错的");
