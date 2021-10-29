@@ -127,8 +127,8 @@ export default class Server extends cc.Component {
         `发送数据到服务器：事件名:${eventName} 结构体:${JSON.stringify(data)}`
       );
       if (
-        this._ws.readyState === WebSocket.OPEN &&
-        this._ws.bufferedAmount === 0
+        this._ws.readyState === WebSocket.OPEN
+        // this._ws.bufferedAmount === 0
       ) {
         this._ws.send(
           btoa(encodeURIComponent(JSON.stringify({ eventName, data })))

@@ -337,11 +337,13 @@ var Room = /** @class */ (function () {
         globalRoomList.push(room);
         return room;
     };
-    Room.prototype.ansGameOver = function (player, playerName) {
-        console.log("\u73A9\u5BB6" + playerName + " \u6E38\u620F\u7ED3\u675F");
-        this._sendAll(signal_1["default"].OVER, { playerName: playerName });
-        // 服务端删除已结束的玩家
-        this.removePlayer(player);
+    Room.prototype.ansGameOver = function (player, playerNames) {
+        for (var i = 0; i < playerNames.length; i++) {
+            console.log("\u73A9\u5BB6" + playerNames[i] + " \u6E38\u620F\u7ED3\u675F");
+            this._sendAll(signal_1["default"].OVER, { playerName: playerNames[i] });
+            // 服务端删除已结束的玩家
+            this.removePlayer(player);
+        }
     };
     return Room;
 }());

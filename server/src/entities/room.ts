@@ -312,8 +312,6 @@ export class Room {
     }
   }
 
-  private _;
-
   private _finishGame() {
     console.log("全部游戏结束");
     this._isGaming = false;
@@ -380,10 +378,12 @@ export class Room {
     return room;
   }
 
-  public ansGameOver(player: Player, playerName: string) {
-    console.log(`玩家${playerName} 游戏结束`);
-    this._sendAll(signal.OVER, { playerName: playerName });
-    // 服务端删除已结束的玩家
-    this.removePlayer(player);
+  public ansGameOver(player: Player, playerNames: string[]) {
+    for (let i = 0; i < playerNames.length; i++) {
+      console.log(`玩家${playerNames[i]} 游戏结束`);
+      this._sendAll(signal.OVER, { playerName: playerNames[i] });
+      // 服务端删除已结束的玩家
+      this.removePlayer(player);
+    }
   }
 }

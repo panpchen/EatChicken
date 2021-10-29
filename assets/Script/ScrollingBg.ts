@@ -22,7 +22,7 @@ export default class ScrollingBg extends cc.Component {
     if (!this._isScrolling) return;
 
     this.bgs.forEach((bg) => {
-      bg.y += 600 * dt;
+      bg.y += 10;
       // 速度越快会出现缝隙问题, 加上offset偏移量解决
       if (bg.y - bg.height / 2 >= cc.winSize.height / 2) {
         let offset = bg.y - bg.height / 2 - cc.winSize.height / 2;

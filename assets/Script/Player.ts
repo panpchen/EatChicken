@@ -49,7 +49,7 @@ export default class Player extends cc.Component {
 
   update(dt) {
     if (!this._move) return;
-    this.node.y -= 300 * dt;
+    this.node.y -= 10;
     if (this.node.y < -cc.winSize.height / 2 - 50) {
       this.remove = true;
       this._move = true;

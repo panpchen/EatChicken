@@ -61,7 +61,7 @@ var Player = /** @class */ (function () {
                     }
                     break;
                 case signal_1["default"].OVER:
-                    _this._room.ansGameOver(_this, result.data.playerName);
+                    _this._room.ansGameOver(_this, result.data.players);
                     break;
             }
         });
@@ -107,8 +107,9 @@ var Player = /** @class */ (function () {
     };
     Player.prototype.send = function (eventName, data) {
         try {
-            if (this._ws.readyState === this._ws.OPEN &&
-                this._ws.bufferedAmount === 0) {
+            if (this._ws.readyState === this._ws.OPEN
+            // this._ws.bufferedAmount === 0
+            ) {
                 if (eventName !== signal_1["default"].HEARTBEAT) {
                     console.log("\u53D1\u9001\u6570\u636E\u5230\u5BA2\u6237\u7AEF\uFF1A\u4E8B\u4EF6\u540D:" + eventName + " | \u7ED3\u6784\u4F53:" + JSON.stringify(data));
                 }

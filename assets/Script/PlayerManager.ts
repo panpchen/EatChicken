@@ -16,6 +16,7 @@ export default class PlayerManager extends cc.Component {
   prefab: cc.Prefab = null;
 
   private _allPlayers: Player[] = [];
+  public allWrongPlayers: Player[] = [];
 
   update() {
     for (let i = 0; i < this._allPlayers.length; i++) {
@@ -57,6 +58,9 @@ export default class PlayerManager extends cc.Component {
   movePlayerToPosByIndex(data, callback?: Function) {
     const player = this.getPlayerByName(data.playerName);
     const pos = this._getPosByIndex(data.targetIndex);
+
+    player.getData().leftSide = pos.x < 0;
+
     if (player) {
       cc.tween(player.node)
         .to(0.3, {
@@ -82,7 +86,7 @@ export default class PlayerManager extends cc.Component {
     return this.getPlayerByName(PlayerData.uname);
   }
 
-  // 通过key获取对应坐标 L1,L2,R1,R2
+  // 通过index获取对应坐标 L1,L2,R1,R2
   _getPosByIndex(index: number) {
     const wrapNum = 9;
     let newPos = cc.Vec3.ZERO;
@@ -132,5 +136,22 @@ export default class PlayerManager extends cc.Component {
       p.remove = true;
     }
     // cc.error("剩余玩家数：", this._allPlayers.length);
+  }
+
+  // 获取所有答错的玩家
+  getSelectWrongPlayers(dir: string) {
+    for (let i = 0; i < this._allPlayers.length; i++) {
+      let p = this._allPlayers[i];
+      if (
+        (dir == "no" && p.getData().leftSide) ||
+        (dir == "yes" && !p.getData().leftSide)
+      ) {
+        this.allWrongPlayers.push(this._allPlayers[i]);
+      }
+    }
+  }
+
+  reset() {
+    this.allWrongPlayers = [];
   }
 }

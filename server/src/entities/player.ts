@@ -66,7 +66,7 @@ export default class Player {
           }
           break;
         case signal.OVER:
-          this._room.ansGameOver(this, result.data.playerName);
+          this._room.ansGameOver(this, result.data.players);
           break;
       }
     });
@@ -120,8 +120,8 @@ export default class Player {
   send(eventName: string, data?: any) {
     try {
       if (
-        this._ws.readyState === this._ws.OPEN &&
-        this._ws.bufferedAmount === 0
+        this._ws.readyState === this._ws.OPEN
+        // this._ws.bufferedAmount === 0
       ) {
         if (eventName !== signal.HEARTBEAT) {
           console.log(

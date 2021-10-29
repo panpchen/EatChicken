@@ -2,6 +2,7 @@ import BaseScene from "./BaseScene";
 import { ALLTIP, GAME_EVENT, SERVER_EVENT, TITLES } from "./Constants";
 import { GameChoice, isSelf, PlayerData } from "./GameData";
 import ObstacleManager from "./ObstacleManager";
+import Player from "./Player";
 import PlayerManager from "./PlayerManager";
 import ScrollingBg from "./ScrollingBg";
 import Server from "./Server";
@@ -63,19 +64,10 @@ export default class Game extends BaseScene {
   _onGameStart(data) {}
 
   _onGameOver(data) {
-    if (PlayerData.uname != data.playerName) {
+    if (data.playerName != PlayerData.uname) {
       TipManager.Instance.showTips(`${data.playerName}玩家游戏结束`);
       return;
     }
-
-    this.scheduleOnce(() => {
-      this.scrollingBg.stopScroll();
-      this.playerManager.moveOutside(() => {
-        this.scheduleOnce(() => {
-          UIManager.instance.showUI(UIType.MainUI);
-        }, 2);
-      });
-    }, 3);
 
     this.playerManager.removePlayer(data.playerName);
     this._reset();
@@ -83,6 +75,7 @@ export default class Game extends BaseScene {
 
   _onGameNext(data) {
     cc.error("更新题目和障碍物配置: ", data);
+    this.playerManager.reset();
     this._updateContent(data);
   }
 
@@ -98,10 +91,12 @@ export default class Game extends BaseScene {
         ? TITLES[TITLES.length - 1]
         : TITLES[data.curTitleId];
     this.topicBar.updateTopicContent(titleOb);
+    // 答题时间结束创建障碍物
     this.topicBar.startGameTime(data.curGameTime, () => {
       this.topicBar.node.active = false;
       this.footer.active = false;
       this.obstacleManager.createObstacle(titleOb.answer, data.curObstacle);
+      this.playerManager.getSelectWrongPlayers(titleOb.answer);
     });
   }
 
@@ -134,6 +129,27 @@ export default class Game extends BaseScene {
       this._canChoose = true;
     });
   }
+
+  checkSendGameOverEvent(count: number) {
+    cc.error(count, this.playerManager.allWrongPlayers.length);
+
+    if (count == this.playerManager.allWrongPlayers.length) {
+      this.scheduleOnce(() => {
+        this.scrollingBg.stopScroll();
+
+        Server.Instance.send(SERVER_EVENT.OVER, {
+          players: this.playerManager.allWrongPlayers,
+        });
+
+        this.playerManager.moveOutside(() => {
+          this.scheduleOnce(() => {
+            UIManager.instance.showUI(UIType.MainUI);
+          }, 2);
+        });
+      }, 3);
+    }
+  }
+
   _onLeave(data) {
     this._refreshOnlinePlayerLabel(data.playerList);
     this.playerManager.removePlayer(data.player.uname);
