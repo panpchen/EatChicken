@@ -40,8 +40,7 @@ export default class Obstacle extends cc.Component {
       ) {
         const player = p.getComponent(Player);
         player.scaleToZero(() => {
-          cc.error("即将发送结束事件： ", i + 1);
-          Game.instance.checkSendGameOverEvent(i + 1, player.getData().uname);
+          Game.instance.checkSendGameOverEvent(player.getData().uname);
         });
       }
     }

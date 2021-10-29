@@ -30,6 +30,7 @@ export default class Game extends BaseScene {
   selectPic: cc.Node = null;
 
   private _canChoose: boolean = true;
+  private _count: number = 0;
   public static instance: Game = null;
 
   onLoad() {
@@ -76,6 +77,7 @@ export default class Game extends BaseScene {
   _onGameNext(data) {
     cc.error("更新题目和障碍物配置: ", data);
     this.playerManager.reset();
+    this._count = 0;
     this._updateContent(data);
   }
 
@@ -130,12 +132,13 @@ export default class Game extends BaseScene {
     });
   }
 
-  checkSendGameOverEvent(count: number, playerName: string) {
-    cc.error(count, this.playerManager.allWrongPlayers);
+  checkSendGameOverEvent(playerName: string) {
+    cc.error(this._count, this.playerManager.allWrongPlayers);
 
     if (playerName != PlayerData.uname) return;
 
-    if (count == this.playerManager.allWrongPlayers.length) {
+    this._count++;
+    if (this._count == this.playerManager.allWrongPlayers.length) {
       this.scheduleOnce(() => {
         this.scrollingBg.stopScroll();
 
