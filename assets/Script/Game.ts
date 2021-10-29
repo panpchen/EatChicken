@@ -130,8 +130,10 @@ export default class Game extends BaseScene {
     });
   }
 
-  checkSendGameOverEvent(count: number) {
-    cc.error(count, this.playerManager.allWrongPlayers.length);
+  checkSendGameOverEvent(count: number, playerName: string) {
+    cc.error(count, this.playerManager.allWrongPlayers);
+
+    if (playerName != PlayerData.uname) return;
 
     if (count == this.playerManager.allWrongPlayers.length) {
       this.scheduleOnce(() => {

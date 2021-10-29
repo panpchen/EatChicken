@@ -16,7 +16,7 @@ export default class PlayerManager extends cc.Component {
   prefab: cc.Prefab = null;
 
   private _allPlayers: Player[] = [];
-  public allWrongPlayers: Player[] = [];
+  public allWrongPlayers: string[] = [];
 
   update() {
     for (let i = 0; i < this._allPlayers.length; i++) {
@@ -44,6 +44,7 @@ export default class PlayerManager extends cc.Component {
       if (isSelf(pData.uname)) {
         PlayerData.uIndex = pData.uIndex;
       }
+      pData.leftSide = true;
       player.init(pData);
       player.node.parent = this.node;
       this._allPlayers.push(player);
@@ -142,11 +143,12 @@ export default class PlayerManager extends cc.Component {
   getSelectWrongPlayers(dir: string) {
     for (let i = 0; i < this._allPlayers.length; i++) {
       let p = this._allPlayers[i];
+      cc.error("玩家的LeftSide: ", p.getData().leftSide);
       if (
         (dir == "no" && p.getData().leftSide) ||
         (dir == "yes" && !p.getData().leftSide)
       ) {
-        this.allWrongPlayers.push(this._allPlayers[i]);
+        this.allWrongPlayers.push(this._allPlayers[i].getData().uname);
       }
     }
   }
