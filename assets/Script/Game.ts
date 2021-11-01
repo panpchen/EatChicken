@@ -2,7 +2,6 @@ import BaseScene from "./BaseScene";
 import { ALLTIP, GAME_EVENT, SERVER_EVENT, TITLES } from "./Constants";
 import { GameChoice, isSelf, PlayerData } from "./GameData";
 import ObstacleManager from "./ObstacleManager";
-import Player from "./Player";
 import PlayerManager from "./PlayerManager";
 import ScrollingBg from "./ScrollingBg";
 import Server from "./Server";

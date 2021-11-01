@@ -6,7 +6,7 @@ export default class Server {
   public static $: Server = null;
   public config: any = null;
 
-  private _clients: Player[] = [];
+  private _players: Player[] = [];
 
   constructor() {
     Server.$ = this;
@@ -28,7 +28,7 @@ export default class Server {
     wss.on("connection", (ws, req) => {
       console.log("已连接服务器 在线人数：", wss.clients.size);
       const player = new Player(ws);
-      this._clients.push(player);
+      this._players.push(player);
       player.connect();
     });
   }
@@ -47,8 +47,8 @@ export default class Server {
 
   isRepeatLogin(player: Player) {
     let count = 0;
-    for (let i = 0; i < this._clients.length; i++) {
-      if (this._clients[i].user.uname == player.user.uname) {
+    for (let i = 0; i < this._players.length; i++) {
+      if (this._players[i].user.uname == player.user.uname) {
         count++;
       }
     }
@@ -56,9 +56,9 @@ export default class Server {
   }
 
   removeClient(player: Player) {
-    for (let i = this._clients.length - 1; i >= 0; i--) {
-      if (this._clients[i].user.uname == player.user.uname) {
-        this._clients.splice(i, 1);
+    for (let i = this._players.length - 1; i >= 0; i--) {
+      if (this._players[i].user.uname == player.user.uname) {
+        this._players.splice(i, 1);
         break;
       }
     }

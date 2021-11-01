@@ -25,20 +25,14 @@ export default class Server extends cc.Component {
   onLoad() {
     cc.game.addPersistRootNode(this.node);
     Server.Instance = this;
-    cc.director.on(GAME_EVENT.GAME_MULTIPLAYER, this._connect, this);
   }
 
-  _connect(...args: any[]) {
+  connect(...args: any[]) {
     if (this._ws) {
       if (this._ws.readyState === WebSocket.CONNECTING) {
         TipManager.Instance.showTips(ALLTIP.CONNECTING);
         return;
       }
-    }
-
-    if (this._isAlive) {
-      TipManager.Instance.showTips(ALLTIP.LOGIN_SUCCESS);
-      return;
     }
 
     TipManager.Instance.showTips(ALLTIP.CONNECTING);
@@ -51,6 +45,7 @@ export default class Server extends cc.Component {
 
   _onOpen(event) {
     cc.log("已连接服务器,开始登录游戏");
+    TipManager.Instance.showTips(ALLTIP.LOGIN_SUCCESS);
     this._startHeartBeat();
     cc.director.emit(GAME_EVENT.GAME_LOGINGAME);
   }
@@ -106,12 +101,11 @@ export default class Server extends cc.Component {
   }
 
   _onError(event) {
-    cc.error("断开连接, 报错");
     this._onClose(event);
   }
 
   _onClose(event) {
-    cc.error("断开连接！", event);
+    cc.error("断开连接！结构体：", event);
     this._isAlive = false;
     TipManager.Instance.showTips(ALLTIP.DISCONNECT);
     this._ws.removeEventListener("open", this._onOpen.bind(this));
@@ -139,7 +133,7 @@ export default class Server extends cc.Component {
     }
   }
 
-  // 客户端心跳检测
+  // 客户端心跳检测 5秒间隔
   _startHeartBeat() {
     this._clearHeartBeat();
     this._isAlive = true;
@@ -148,11 +142,12 @@ export default class Server extends cc.Component {
       if (this._isAlive === false) {
         cc.log(`客户端停止心跳检测，因为已断线`);
         this._clearHeartBeat();
-        return this._ws.close();
+        cc.director.emit(GAME_EVENT.GAME_LOSTCONNECTION);
+        return;
       }
       this._isAlive = false;
       this.send(SERVER_EVENT.HEARTBEAT);
-    }, 10000);
+    }, 5000);
   }
 
   _clearHeartBeat() {

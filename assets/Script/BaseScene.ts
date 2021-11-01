@@ -24,6 +24,7 @@ export default class BaseScene extends cc.Component {
   }
 
   protected onLostConnection() {
+    // cc.error("场景名：", cc.director.getScene().name);
     cc.director.loadScene("Login");
   }
 }

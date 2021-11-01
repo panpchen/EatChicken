@@ -42,7 +42,7 @@ var fs = require("fs");
 var Server = /** @class */ (function () {
     function Server() {
         this.config = null;
-        this._clients = [];
+        this._players = [];
         Server.$ = this;
     }
     Server.prototype.init = function () {
@@ -70,7 +70,7 @@ var Server = /** @class */ (function () {
         wss.on("connection", function (ws, req) {
             console.log("已连接服务器 在线人数：", wss.clients.size);
             var player = new player_1["default"](ws);
-            _this._clients.push(player);
+            _this._players.push(player);
             player.connect();
         });
     };
@@ -88,17 +88,17 @@ var Server = /** @class */ (function () {
     };
     Server.prototype.isRepeatLogin = function (player) {
         var count = 0;
-        for (var i = 0; i < this._clients.length; i++) {
-            if (this._clients[i].user.uname == player.user.uname) {
+        for (var i = 0; i < this._players.length; i++) {
+            if (this._players[i].user.uname == player.user.uname) {
                 count++;
             }
         }
         return count > 1;
     };
     Server.prototype.removeClient = function (player) {
-        for (var i = this._clients.length - 1; i >= 0; i--) {
-            if (this._clients[i].user.uname == player.user.uname) {
-                this._clients.splice(i, 1);
+        for (var i = this._players.length - 1; i >= 0; i--) {
+            if (this._players[i].user.uname == player.user.uname) {
+                this._players.splice(i, 1);
                 break;
             }
         }

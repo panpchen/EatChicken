@@ -269,7 +269,7 @@ var Room = /** @class */ (function () {
             this._curTitleId++;
             // 等待一段时间继续下一题
             this._timeOut = setTimeout(function () {
-                console.log("显示题目： ", _this._curTitleId + 1);
+                console.log("显示题目: ", _this._curTitleId + 1);
                 _this._curGameTime = GAME_TIME;
                 _this._playGame();
             }, 6000);

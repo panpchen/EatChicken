@@ -42,6 +42,6 @@ export default class Login extends cc.Component {
     PlayerData.uid = uuidv1();
     PlayerData.uname = this.editBox.string.trim();
 
-    cc.director.emit(GAME_EVENT.GAME_MULTIPLAYER);
+    Server.Instance.connect();
   }
 }

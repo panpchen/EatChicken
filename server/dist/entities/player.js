@@ -67,6 +67,7 @@ var Player = /** @class */ (function () {
         });
         this._ws.on("error", function (msg) {
             console.log("已断开连接：onError");
+            _this._ws.terminate();
         });
         this._ws.on("close", function (code, reason) {
             console.log("\u5DF2\u65AD\u5F00\u8FDE\u63A5: " + _this.user.uname);
@@ -79,7 +80,7 @@ var Player = /** @class */ (function () {
             }
         });
     };
-    // 服务端心跳检测
+    // 服务端心跳检测 5秒间隔
     Player.prototype._startHeartBeat = function () {
         var _this = this;
         this._ws.on("pong", function () {
@@ -89,12 +90,13 @@ var Player = /** @class */ (function () {
         this._ws.ping();
         this._pingInterval = setInterval(function () {
             if (_this._isAlive === false) {
-                // console.log(`停止心跳检测： 玩家: ${this.user.uname} 已断开连接`);
-                return _this._ws.terminate();
+                // console.log(`停止心跳检测：玩家: ${this.user.uname}  已断开连接`);
+                server_1["default"].$.removeClient(_this);
+                return;
             }
             _this._isAlive = false;
             _this._ws.ping();
-        }, 10000); // 心跳检测间隔
+        }, 5000);
     };
     Player.prototype._ansJoin = function (result) {
         this._room = room_1.Room.findRoomWithSeat() || room_1.Room.create();
@@ -120,7 +122,7 @@ var Player = /** @class */ (function () {
             console.error("服务端发送错误: ", err);
         }
     };
-    Player.prototype.closeSocket = function () {
+    Player.prototype._closeSocket = function () {
         this._ws.close();
     };
     return Player;

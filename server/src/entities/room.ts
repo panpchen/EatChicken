@@ -305,7 +305,7 @@ export class Room {
       this._curTitleId++;
       // 等待一段时间继续下一题
       this._timeOut = setTimeout(() => {
-        console.log("显示题目： ", this._curTitleId + 1);
+        console.log("显示题目: ", this._curTitleId + 1);
         this._curGameTime = GAME_TIME;
         this._playGame();
       }, 6000);

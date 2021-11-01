@@ -73,6 +73,7 @@ export default class Player {
 
     this._ws.on("error", (msg) => {
       console.log("已断开连接：onError");
+      this._ws.terminate();
     });
 
     this._ws.on("close", (code: number, reason: string) => {
@@ -87,7 +88,7 @@ export default class Player {
     });
   }
 
-  // 服务端心跳检测
+  // 服务端心跳检测 5秒间隔
   _startHeartBeat() {
     this._ws.on("pong", () => {
       // console.log(`心跳检测中 ${this.user.uname}`);
@@ -97,13 +98,14 @@ export default class Player {
     this._ws.ping();
     this._pingInterval = setInterval(() => {
       if (this._isAlive === false) {
-        // console.log(`停止心跳检测： 玩家: ${this.user.uname} 已断开连接`);
-        return this._ws.terminate();
+        // console.log(`停止心跳检测：玩家: ${this.user.uname}  已断开连接`);
+        Server.$.removeClient(this);
+        return;
       }
 
       this._isAlive = false;
       this._ws.ping();
-    }, 10000); // 心跳检测间隔
+    }, 5000);
   }
 
   _ansJoin(result) {
@@ -141,7 +143,7 @@ export default class Player {
     }
   }
 
-  closeSocket() {
+  _closeSocket() {
     this._ws.close();
   }
 }
