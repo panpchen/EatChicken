@@ -74,7 +74,7 @@ export default class Game extends BaseScene {
   }
 
   _onGameNext(data) {
-    cc.error("更新题目和障碍物配置: ", data);
+    cc.error("更新题目和障碍物配置:", data);
     this.playerManager.reset();
     this._count = 0;
     this._updateContent(data);
