@@ -10,6 +10,7 @@ export const PlayerData: IPlayer = {
   uid: "",
   uname: "",
   uIndex: -1,
+  leftSide: true,
 };
 
 export function isSelf(uname: string) {
